@@ -3,11 +3,20 @@ import type { SignInInput, SignUpInput } from './validation';
 
 /** Maps Supabase auth errors to user-friendly messages (SPEC 12.5). */
 function friendlyAuthError(message: string): string {
+  // Raw cause goes to the console for whoever is debugging; the user gets clean copy.
+  console.warn('[auth]', message);
   const msg = message.toLowerCase();
   if (msg.includes('invalid login credentials')) return 'Wrong email or password.';
   if (msg.includes('already registered')) return 'That email already has an account. Sign in instead.';
+  if (msg.includes('email rate limit') || msg.includes('only request this after')) {
+    return 'Confirmation emails are rate-limited right now. Try again in about an hour.';
+  }
+  if (msg.includes('confirmation email') || msg.includes('sending email')) {
+    return 'Could not send the confirmation email. Try again shortly.';
+  }
   if (msg.includes('rate limit')) return 'Too many attempts. Wait a minute and try again.';
-  return 'Could not sign you in. Check your connection and try again.';
+  if (msg.includes('not confirmed')) return 'Confirm your email first, then sign in.';
+  return `Could not sign you in (${message}).`;
 }
 
 export async function signInWithPassword(input: SignInInput): Promise<void> {
