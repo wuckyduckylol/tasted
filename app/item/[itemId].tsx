@@ -6,6 +6,7 @@ import { ScrollView } from 'react-native';
 
 import { CommunityBlock, ScoreNumber } from '@/components/score';
 import { Body, Button, ErrorState, LoadingState, ScreenContainer, Title } from '@/components/ui';
+import { affiliateLinksFor } from '@/features/premium/entitlements';
 import { useSession } from '@/hooks/useSession';
 import { getItem } from '@/lib/db/catalog';
 import { getCollabPredictions } from '@/lib/db/collab';
@@ -124,6 +125,10 @@ export default function ItemDetailScreen() {
             onPress={() => toggleWanted.mutate(!wanted)}
           />
         </View>
+
+        {affiliateLinksFor(item.id).length === 0 ? (
+          <Text style={styles.affiliateNote}>Ordering links coming soon</Text>
+        ) : null}
       </ScrollView>
     </ScreenContainer>
   );
@@ -147,4 +152,5 @@ const styles = StyleSheet.create({
   },
   collabText: { fontSize: 15, fontWeight: '600', color: colors.text },
   actions: { gap: spacing.sm, marginTop: spacing.sm },
+  affiliateNote: { fontSize: 13, color: colors.textMuted, textAlign: 'center' },
 });
