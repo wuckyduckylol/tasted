@@ -3,6 +3,7 @@ import { useMemo } from 'react';
 
 import { predictForItems } from './predict';
 import { useSession } from '../../hooks/useSession';
+import { getCollabPredictions } from '../../lib/db/collab';
 import { listMyRatingsWithItems } from '../../lib/db/ratings';
 import { getItemScores } from '../../lib/db/scores';
 import { getTasteProfile } from '../../lib/db/tasteProfiles';
@@ -38,6 +39,11 @@ export function useForYouData(items: Item[] | undefined): ForYouData {
     queryFn: () => getItemScores(itemIds),
     enabled: itemIds.length > 0,
   });
+  const collabQuery = useQuery({
+    queryKey: ['collabPredictions', userId, itemIds],
+    queryFn: () => getCollabPredictions(itemIds),
+    enabled: Boolean(userId) && itemIds.length > 0,
+  });
 
   const ratingsByItemId = useMemo(
     () => new Map((ratingsQuery.data ?? []).map(({ rating }) => [rating.itemId, rating])),
@@ -53,8 +59,9 @@ export function useForYouData(items: Item[] | undefined): ForYouData {
         profile: profileQuery.data ?? {},
         scores,
         userRatingsCount: ratingsQuery.data?.length ?? 0,
+        collab: collabQuery.data,
       }),
-    [items, ratingsByItemId, profileQuery.data, scores, ratingsQuery.data],
+    [items, ratingsByItemId, profileQuery.data, scores, ratingsQuery.data, collabQuery.data],
   );
 
   return {

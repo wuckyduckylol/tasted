@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { FlatList, RefreshControl, StyleSheet, Switch, Text, View } from 'react-native';
 
 import { ItemRow } from '@/components/ItemRow';
@@ -12,12 +12,14 @@ import {
   LoadingState,
   ScreenContainer,
   SectionHeader,
+  TextField,
   Title,
 } from '@/components/ui';
 import { signOut } from '@/features/auth/api';
 import { useSession } from '@/hooks/useSession';
 import { listActiveChains } from '@/lib/db/catalog';
-import { getFollowCounts } from '@/lib/db/follows';
+import { findProfileByUsername } from '@/lib/db/collab';
+import { getFollowCounts, setFollowing } from '@/lib/db/follows';
 import { getMyProfile, updateMyProfile } from '@/lib/db/profiles';
 import { listMyRatingsWithItems } from '@/lib/db/ratings';
 import { getSupabase } from '@/lib/supabase';
@@ -62,6 +64,25 @@ export default function ProfileScreen() {
   const togglePrivate = useMutation({
     mutationFn: (isPrivate: boolean) => updateMyProfile(userId as string, { isPrivate }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['profile', userId] }),
+  });
+
+  const [friendName, setFriendName] = useState('');
+  const [followMessage, setFollowMessage] = useState<string | null>(null);
+  const followByName = useMutation({
+    mutationFn: async (username: string) => {
+      const found = await findProfileByUsername(username);
+      if (!found) throw new Error(`No one named @${username} here yet.`);
+      if (found.id === userId) throw new Error('That would be you.');
+      await setFollowing(userId as string, found.id, true);
+      return found.username;
+    },
+    onSuccess: (username) => {
+      setFollowMessage(`Following @${username}`);
+      setFriendName('');
+      void queryClient.invalidateQueries({ queryKey: ['followCounts', userId] });
+      void queryClient.invalidateQueries({ queryKey: ['friendsFeed'] });
+    },
+    onError: (e) => setFollowMessage(e instanceof Error ? e.message : 'Could not follow.'),
   });
 
   const chainStats = useMemo(() => {
@@ -148,6 +169,26 @@ export default function ProfileScreen() {
                 trackColor={{ true: colors.accent }}
               />
             </View>
+            <View style={styles.followBlock}>
+              <SectionHeader>Find friends</SectionHeader>
+              <TextField
+                label="Follow by username"
+                value={friendName}
+                onChangeText={(t) => {
+                  setFriendName(t);
+                  setFollowMessage(null);
+                }}
+                autoCapitalize="none"
+                placeholder="fry_scientist"
+              />
+              {followMessage ? <Body muted>{followMessage}</Body> : null}
+              <Button
+                label={followByName.isPending ? 'Looking…' : 'Follow'}
+                variant="secondary"
+                disabled={followByName.isPending || friendName.trim().length < 3}
+                onPress={() => followByName.mutate(friendName.trim())}
+              />
+            </View>
             <View style={styles.actionsRow}>
               <Button
                 label="Share tier list"
@@ -211,6 +252,7 @@ const styles = StyleSheet.create({
     minHeight: 44,
   },
   actionsRow: { gap: spacing.sm },
+  followBlock: { gap: spacing.sm },
   logRow: { flexDirection: 'row' },
   rowFlex: { flex: 1 },
 });

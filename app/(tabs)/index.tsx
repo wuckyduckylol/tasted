@@ -5,8 +5,9 @@ import { FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from 'rea
 import { EmptyState, ErrorState, LoadingState, ScreenContainer, SectionHeader } from '@/components/ui';
 import { useSession } from '@/hooks/useSession';
 import { listActiveChains } from '@/lib/db/catalog';
+import { getFriendsRecentRatings } from '@/lib/db/collab';
 import { isSupabaseConfigured } from '@/lib/config';
-import { colors, spacing } from '@/lib/theme';
+import { colors, scoreColor, spacing } from '@/lib/theme';
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -15,6 +16,11 @@ export default function HomeScreen() {
   const chainsQuery = useQuery({
     queryKey: ['chains'],
     queryFn: listActiveChains,
+    enabled: isSupabaseConfigured && Boolean(session),
+  });
+  const friendsQuery = useQuery({
+    queryKey: ['friendsFeed'],
+    queryFn: () => getFriendsRecentRatings(10),
     enabled: isSupabaseConfigured && Boolean(session),
   });
 
@@ -75,6 +81,26 @@ export default function HomeScreen() {
                 <Text style={styles.linkLabel}>🗳️ Next chain</Text>
               </Pressable>
             </View>
+            {(friendsQuery.data ?? []).length > 0 ? (
+              <View style={styles.friendsBlock}>
+                <SectionHeader>Friends recently rated</SectionHeader>
+                {(friendsQuery.data ?? []).map((f) => (
+                  <Pressable
+                    key={`${f.userId}-${f.itemId}`}
+                    accessibilityRole="button"
+                    onPress={() => router.push(`/item/${f.itemId}`)}
+                    style={({ pressed }) => [styles.friendRow, pressed && styles.pressed]}
+                  >
+                    <Text style={styles.friendText} numberOfLines={1}>
+                      @{f.username} · {f.itemName}
+                    </Text>
+                    <Text style={[styles.friendScore, { color: scoreColor(f.personalScore) }]}>
+                      {f.personalScore.toFixed(1)}
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
+            ) : null}
             <SectionHeader>Where are you eating?</SectionHeader>
           </View>
         }
@@ -120,6 +146,21 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   linkLabel: { fontSize: 15, fontWeight: '600', color: colors.text },
+  friendsBlock: { gap: spacing.sm },
+  friendRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: colors.card,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
+    paddingHorizontal: spacing.md,
+    minHeight: 48,
+    gap: spacing.sm,
+  },
+  friendText: { flex: 1, fontSize: 14, color: colors.text },
+  friendScore: { fontSize: 16, fontWeight: '800' },
   chainCard: {
     flexDirection: 'row',
     alignItems: 'center',

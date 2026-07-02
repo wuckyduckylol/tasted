@@ -8,6 +8,7 @@ import { CommunityBlock, ScoreNumber } from '@/components/score';
 import { Body, Button, ErrorState, LoadingState, ScreenContainer, Title } from '@/components/ui';
 import { useSession } from '@/hooks/useSession';
 import { getItem } from '@/lib/db/catalog';
+import { getCollabPredictions } from '@/lib/db/collab';
 import { getMyRatingForItem } from '@/lib/db/ratings';
 import { getItemScore } from '@/lib/db/scores';
 import { isWanted, setWanted } from '@/lib/db/wantToTry';
@@ -38,6 +39,11 @@ export default function ItemDetailScreen() {
   const wantedQuery = useQuery({
     queryKey: ['wantToTry', userId, itemId],
     queryFn: () => isWanted(userId as string, itemId),
+    enabled: Boolean(userId && itemId),
+  });
+  const collabQuery = useQuery({
+    queryKey: ['collabPredictions', userId, [itemId]],
+    queryFn: () => getCollabPredictions([itemId]),
     enabled: Boolean(userId && itemId),
   });
 
@@ -94,6 +100,18 @@ export default function ItemDetailScreen() {
 
         <CommunityBlock score={scoreQuery.data ?? null} />
 
+        {(() => {
+          const collab = collabQuery.data?.get(itemId);
+          if (!collab) return null; // hide when unavailable (SPEC 6.5)
+          return (
+            <View style={styles.collabLine}>
+              <Text style={styles.collabText}>
+                People who rate like you gave it {collab.score.toFixed(1)}/10
+              </Text>
+            </View>
+          );
+        })()}
+
         <View style={styles.actions}>
           <Button
             label={myRating ? 'Re-rate this' : 'Rate this'}
@@ -120,5 +138,13 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.md,
   },
   note: { fontSize: 15, fontStyle: 'italic', color: colors.textMuted, textAlign: 'center' },
+  collabLine: {
+    backgroundColor: colors.card,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
+    padding: spacing.md,
+  },
+  collabText: { fontSize: 15, fontWeight: '600', color: colors.text },
   actions: { gap: spacing.sm, marginTop: spacing.sm },
 });

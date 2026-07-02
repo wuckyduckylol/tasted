@@ -287,6 +287,34 @@ export type Database = {
         Args: { p_bucket: Bucket; p_band: Band; p_scores: Json };
         Returns: undefined;
       };
+      recompute_item_scores: {
+        Args: Record<string, never>;
+        Returns: undefined;
+      };
+      recompute_user_similarity: {
+        Args: Record<string, never>;
+        Returns: undefined;
+      };
+      collab_predictions: {
+        Args: { p_item_ids: string[] };
+        Returns: { item_id: string; predicted_score: number; neighbors: number }[];
+      };
+      friends_recent_ratings: {
+        Args: { p_limit?: number };
+        Returns: {
+          user_id: string;
+          username: string;
+          item_id: string;
+          item_name: string;
+          band: Band;
+          personal_score: number;
+          rated_at: string;
+        }[];
+      };
+      find_profile_by_username: {
+        Args: { p_username: string };
+        Returns: { id: string; username: string; display_name: string | null; is_private: boolean }[];
+      };
     };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;

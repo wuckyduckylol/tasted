@@ -11,22 +11,22 @@ export interface PredictInputs {
   profile: FeatureVector;
   scores: Map<string, ItemScore>;
   userRatingsCount: number;
+  /** Server-computed neighbor predictions (SPEC 5.4); absent while similarity data is thin. */
+  collab?: Map<string, { score: number; neighbors: number }>;
 }
 
-/**
- * Runs the SPEC 5.5 blend for a list of items. Collaborative inputs arrive in
- * Phase 10; until then collab is null and the blend uses content + community.
- */
+/** Runs the SPEC 5.5 blend for a list of items. */
 export function predictForItems(inputs: PredictInputs): Map<string, Prediction | null> {
   const out = new Map<string, Prediction | null>();
   for (const item of inputs.items) {
     const score = inputs.scores.get(item.id) ?? null;
+    const collab = inputs.collab?.get(item.id) ?? null;
     out.set(
       item.id,
       predictForYou({
         userScore: inputs.ratingsByItemId.get(item.id)?.personalScore ?? null,
-        collabScore: null,
-        neighborsUsed: 0,
+        collabScore: collab?.score ?? null,
+        neighborsUsed: collab?.neighbors ?? 0,
         contentScore: predictContent(inputs.profile, item.attributes, item.tagSlugs),
         communityScore: score?.weightedScore ?? null,
         itemNumRatings: score?.numRatings ?? 0,
