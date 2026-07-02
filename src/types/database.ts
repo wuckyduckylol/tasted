@@ -7,7 +7,7 @@ export type Json = string | number | boolean | null | { [key: string]: Json | un
 type Bucket = 'drinks' | 'sweet' | 'savory';
 type Band = 'loved' | 'fine' | 'disliked';
 
-interface ProfileRow {
+type ProfileRow = {
   id: string;
   username: string;
   display_name: string | null;
@@ -18,7 +18,7 @@ interface ProfileRow {
   created_at: string;
 }
 
-interface ChainRow {
+type ChainRow = {
   id: string;
   name: string;
   slug: string;
@@ -29,7 +29,7 @@ interface ChainRow {
   created_at: string;
 }
 
-interface ItemRow {
+type ItemRow = {
   id: string;
   chain_id: string;
   name: string;
@@ -43,19 +43,19 @@ interface ItemRow {
   created_at: string;
 }
 
-interface TagRow {
+type TagRow = {
   id: string;
   name: string;
   slug: string;
   created_at: string;
 }
 
-interface ItemTagRow {
+type ItemTagRow = {
   item_id: string;
   tag_id: string;
 }
 
-interface RatingRow {
+type RatingRow = {
   id: string;
   user_id: string;
   item_id: string;
@@ -67,7 +67,7 @@ interface RatingRow {
   updated_at: string;
 }
 
-interface ComparisonRow {
+type ComparisonRow = {
   id: string;
   user_id: string;
   bucket: Bucket;
@@ -78,7 +78,7 @@ interface ComparisonRow {
   created_at: string;
 }
 
-interface ItemScoreRow {
+type ItemScoreRow = {
   item_id: string;
   num_ratings: number;
   mean_score: number | null;
@@ -90,13 +90,13 @@ interface ItemScoreRow {
   updated_at: string;
 }
 
-interface TasteProfileRow {
+type TasteProfileRow = {
   user_id: string;
   attribute_weights: Json;
   updated_at: string;
 }
 
-interface UserSimilarityRow {
+type UserSimilarityRow = {
   user_a: string;
   user_b: string;
   similarity: number;
@@ -104,7 +104,7 @@ interface UserSimilarityRow {
   created_at: string;
 }
 
-interface PredictedScoreRow {
+type PredictedScoreRow = {
   user_id: string;
   item_id: string;
   predicted_score: number;
@@ -113,19 +113,19 @@ interface PredictedScoreRow {
   updated_at: string;
 }
 
-interface WantToTryRow {
+type WantToTryRow = {
   user_id: string;
   item_id: string;
   created_at: string;
 }
 
-interface FollowRow {
+type FollowRow = {
   follower_id: string;
   following_id: string;
   created_at: string;
 }
 
-interface ChainCandidateRow {
+type ChainCandidateRow = {
   id: string;
   name: string;
   logo_url: string | null;
@@ -134,13 +134,13 @@ interface ChainCandidateRow {
   created_at: string;
 }
 
-interface ChainVoteRow {
+type ChainVoteRow = {
   user_id: string;
   candidate_id: string;
   created_at: string;
 }
 
-interface ReportRow {
+type ReportRow = {
   id: string;
   reporter_id: string;
   target_type: 'rating' | 'note' | 'user' | 'photo';
@@ -149,7 +149,7 @@ interface ReportRow {
   created_at: string;
 }
 
-interface NotificationRow {
+type NotificationRow = {
   id: string;
   user_id: string;
   type: string;
@@ -158,14 +158,14 @@ interface NotificationRow {
   created_at: string;
 }
 
-interface PushTokenRow {
+type PushTokenRow = {
   user_id: string;
   expo_push_token: string;
   platform: string | null;
   created_at: string;
 }
 
-interface ItemSuggestionRow {
+type ItemSuggestionRow = {
   id: string;
   user_id: string;
   chain_id: string | null;
@@ -178,24 +178,79 @@ interface ItemSuggestionRow {
 type Insertable<Row, Required extends keyof Row> = Pick<Row, Required> &
   Partial<Omit<Row, Required>>;
 
-interface Table<Row, Required extends keyof Row> {
+type Rel = {
+  foreignKeyName: string;
+  columns: string[];
+  isOneToOne: boolean;
+  referencedRelation: string;
+  referencedColumns: string[];
+};
+
+type Table<Row, Required extends keyof Row, Rels extends Rel[] = []> = {
   Row: Row;
   Insert: Insertable<Row, Required>;
   Update: Partial<Row>;
-  Relationships: [];
+  Relationships: Rels;
 }
 
-export interface Database {
+export type Database = {
   public: {
     Tables: {
       profiles: Table<ProfileRow, 'id' | 'username'>;
       chains: Table<ChainRow, 'name' | 'slug'>;
-      items: Table<ItemRow, 'chain_id' | 'name' | 'bucket'>;
+      items: Table<
+        ItemRow,
+        'chain_id' | 'name' | 'bucket',
+        [
+          {
+            foreignKeyName: 'items_chain_id_fkey';
+            columns: ['chain_id'];
+            isOneToOne: false;
+            referencedRelation: 'chains';
+            referencedColumns: ['id'];
+          },
+        ]
+      >;
       tags: Table<TagRow, 'name' | 'slug'>;
-      item_tags: Table<ItemTagRow, 'item_id' | 'tag_id'>;
+      item_tags: Table<
+        ItemTagRow,
+        'item_id' | 'tag_id',
+        [
+          {
+            foreignKeyName: 'item_tags_item_id_fkey';
+            columns: ['item_id'];
+            isOneToOne: false;
+            referencedRelation: 'items';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'item_tags_tag_id_fkey';
+            columns: ['tag_id'];
+            isOneToOne: false;
+            referencedRelation: 'tags';
+            referencedColumns: ['id'];
+          },
+        ]
+      >;
       ratings: Table<
         RatingRow,
-        'user_id' | 'item_id' | 'band' | 'would_order_again' | 'personal_score'
+        'user_id' | 'item_id' | 'band' | 'would_order_again' | 'personal_score',
+        [
+          {
+            foreignKeyName: 'ratings_item_id_fkey';
+            columns: ['item_id'];
+            isOneToOne: false;
+            referencedRelation: 'items';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'ratings_user_id_fkey';
+            columns: ['user_id'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ]
       >;
       comparisons: Table<ComparisonRow, 'user_id' | 'bucket' | 'band' | 'item_a' | 'item_b'>;
       item_scores: Table<ItemScoreRow, 'item_id'>;
@@ -205,7 +260,19 @@ export interface Database {
         PredictedScoreRow,
         'user_id' | 'item_id' | 'predicted_score' | 'source' | 'confidence'
       >;
-      want_to_try: Table<WantToTryRow, 'user_id' | 'item_id'>;
+      want_to_try: Table<
+        WantToTryRow,
+        'user_id' | 'item_id',
+        [
+          {
+            foreignKeyName: 'want_to_try_item_id_fkey';
+            columns: ['item_id'];
+            isOneToOne: false;
+            referencedRelation: 'items';
+            referencedColumns: ['id'];
+          },
+        ]
+      >;
       follows: Table<FollowRow, 'follower_id' | 'following_id'>;
       chain_candidates: Table<ChainCandidateRow, 'name'>;
       chain_votes: Table<ChainVoteRow, 'user_id' | 'candidate_id'>;
