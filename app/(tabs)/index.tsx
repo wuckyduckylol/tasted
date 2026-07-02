@@ -57,7 +57,27 @@ export default function HomeScreen() {
             tintColor={colors.accent}
           />
         }
-        ListHeaderComponent={<SectionHeader>Where are you eating?</SectionHeader>}
+        ListHeaderComponent={
+          <View style={styles.headerLinks}>
+            <View style={styles.linkRow}>
+              <Pressable
+                accessibilityRole="button"
+                onPress={() => router.push('/leaderboards')}
+                style={({ pressed }) => [styles.linkCard, pressed && styles.pressed]}
+              >
+                <Text style={styles.linkLabel}>🏆 Leaderboards</Text>
+              </Pressable>
+              <Pressable
+                accessibilityRole="button"
+                onPress={() => router.push('/vote')}
+                style={({ pressed }) => [styles.linkCard, pressed && styles.pressed]}
+              >
+                <Text style={styles.linkLabel}>🗳️ Next chain</Text>
+              </Pressable>
+            </View>
+            <SectionHeader>Where are you eating?</SectionHeader>
+          </View>
+        }
         ListEmptyComponent={
           <EmptyState
             title="No chains yet"
@@ -87,6 +107,19 @@ function Separator() {
 
 const styles = StyleSheet.create({
   list: { padding: spacing.md, gap: 0 },
+  headerLinks: { gap: spacing.md, marginBottom: spacing.xs },
+  linkRow: { flexDirection: 'row', gap: spacing.sm },
+  linkCard: {
+    flex: 1,
+    backgroundColor: colors.card,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
+    minHeight: 48,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  linkLabel: { fontSize: 15, fontWeight: '600', color: colors.text },
   chainCard: {
     flexDirection: 'row',
     alignItems: 'center',
