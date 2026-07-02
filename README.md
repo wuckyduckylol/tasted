@@ -1,56 +1,47 @@
-# Welcome to your Expo app 👋
+# Tasted
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Mobile app that tells you the best thing to order at each major fast-food chain, powered by a
+personal taste profile you build by rating individual menu items. Full product spec: [SPEC.md](./SPEC.md).
 
-## Get started
+Stack: Expo (React Native) + TypeScript strict, expo-router, Supabase (Postgres/Auth/RLS/Edge
+Functions), TanStack Query, Zustand, Zod, Jest.
 
-1. Install dependencies
+## First-time setup
 
-   ```bash
-   npm install
+1. **Create a Supabase project** at supabase.com, then copy `.env.example` to `.env` and fill in:
+   - `EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_ANON_KEY` (Project Settings → API)
+   - `SUPABASE_SERVICE_ROLE_KEY` (server-side only; used by the seed script)
+2. **Apply migrations** (in order) — either `supabase db push` with the linked CLI, or paste the
+   files from `supabase/migrations/` into the SQL editor:
+   - `20260701000001_init.sql` — all tables, RLS, triggers
+   - `20260701000002_item_scores_job.sql` — community score job (+pg_cron schedule)
+   - `20260701000003_social_collab.sql` — similarity batch + collab/friends RPCs
+3. **Seed the catalog** (chains/items/tags/candidates only — never ratings):
+   ```sh
+   node supabase/seed/seed.mjs
+   ```
+4. **Run the app**:
+   ```sh
+   npm install --legacy-peer-deps
+   npm start          # then i for iOS simulator, a for Android
    ```
 
-2. Start the app
+## Development
 
-   ```bash
-   npx expo start
-   ```
+- `npm run typecheck` — TS strict, no `any`
+- `npm test` — Jest; the scoring algorithms in `src/lib/scoring` are fully unit-tested (SPEC §17)
+- `npm run lint` / `npm run format`
 
-In the output, you'll find options to open the app in a
+## Architecture notes
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+- All DB access goes through `src/lib/db/*`; components never call Supabase directly.
+- All scoring/ranking is pure functions in `src/lib/scoring` — see SPEC §5.
+- Community aggregates (`item_scores`) are recomputed server-side (trigger + pg_cron + edge
+  function); clients only read them.
+- No fabricated data anywhere: empty/"score forming" states render until real ratings exist.
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+## Not configured yet (human steps — SPEC §15)
 
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
-```
-
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
-
-### Other setup steps
-
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+- Apple / Google OAuth credentials (email/password works today; social buttons explain themselves)
+- Expo push credentials (token registration no-ops without them)
+- RevenueCat (entitlement gate returns free tier for everyone)
