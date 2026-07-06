@@ -96,6 +96,13 @@ type TasteProfileRow = {
   updated_at: string;
 }
 
+type UserFavoriteChainRow = {
+  user_id: string;
+  chain_id: string;
+  rank: number;
+  created_at: string;
+}
+
 type UserSimilarityRow = {
   user_a: string;
   user_b: string;
@@ -255,6 +262,7 @@ export type Database = {
       comparisons: Table<ComparisonRow, 'user_id' | 'bucket' | 'band' | 'item_a' | 'item_b'>;
       item_scores: Table<ItemScoreRow, 'item_id'>;
       taste_profiles: Table<TasteProfileRow, 'user_id'>;
+      user_favorite_chains: Table<UserFavoriteChainRow, 'user_id' | 'chain_id' | 'rank'>;
       user_similarity: Table<UserSimilarityRow, 'user_a' | 'user_b' | 'similarity' | 'co_rated'>;
       predicted_scores: Table<
         PredictedScoreRow,

@@ -1,11 +1,23 @@
+import { Fredoka_500Medium, Fredoka_600SemiBold } from '@expo-google-fonts/fredoka';
+import {
+  Nunito_400Regular,
+  Nunito_600SemiBold,
+  Nunito_700Bold,
+  Nunito_800ExtraBold,
+  useFonts,
+} from '@expo-google-fonts/nunito';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Stack, useRouter, useSegments } from 'expo-router';
+import * as SplashScreen from 'expo-splash-screen';
 import { useEffect, useState } from 'react';
 
 import { LoadingState } from '@/components/ui';
+import { SIGNED_IN_AUTH_ROUTES } from '@/features/onboarding/steps';
 import { useSession } from '@/hooks/useSession';
 import { isSupabaseConfigured } from '@/lib/config';
 import { colors } from '@/lib/theme';
+
+void SplashScreen.preventAutoHideAsync();
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -27,10 +39,10 @@ function useAuthGate() {
     if (isLoading) return;
     const segs: string[] = segments;
     const inAuthGroup = segs[0] === '(auth)';
-    const inOnboarding = inAuthGroup && segs[1] === 'onboarding';
+    const inWizard = inAuthGroup && SIGNED_IN_AUTH_ROUTES.has(segs[1] ?? '');
     if (isSupabaseConfigured && !session && !inAuthGroup) {
-      router.replace('/(auth)/sign-in');
-    } else if (session && inAuthGroup && !inOnboarding) {
+      router.replace('/(auth)/get-started');
+    } else if (session && inAuthGroup && !inWizard) {
       router.replace('/(tabs)');
     }
     setReady(true);
@@ -41,10 +53,24 @@ function useAuthGate() {
 
 export default function RootLayout() {
   const ready = useAuthGate();
+  const [fontsLoaded, fontsError] = useFonts({
+    Fredoka_500Medium,
+    Fredoka_600SemiBold,
+    Nunito_400Regular,
+    Nunito_600SemiBold,
+    Nunito_700Bold,
+    Nunito_800ExtraBold,
+  });
+  // Render with system fonts rather than hanging forever if fonts fail to load.
+  const fontsReady = fontsLoaded || fontsError !== null;
+
+  useEffect(() => {
+    if (ready && fontsReady) void SplashScreen.hideAsync();
+  }, [ready, fontsReady]);
 
   return (
     <QueryClientProvider client={queryClient}>
-      {ready ? (
+      {ready && fontsReady ? (
         <Stack
           screenOptions={{
             headerStyle: { backgroundColor: colors.base },
