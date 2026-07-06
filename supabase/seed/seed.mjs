@@ -105,6 +105,14 @@ for (const chain of catalog.chains) {
   console.log(`Seeded chain ${chain.name} (${chain.items.length} items)`);
 }
 
+// Candidates that graduated into real chains stay on the ballot as "unlocked"
+// (their votes are history, not future); never re-insert them as candidates.
+const { error: unlockErr } = await db
+  .from('chain_candidates')
+  .update({ is_unlocked: true })
+  .in('name', catalog.chains.map((c) => c.name));
+if (unlockErr) fail('candidate graduation', unlockErr);
+
 for (const candidate of catalog.chain_candidates) {
   const { data: existing, error: findErr } = await db
     .from('chain_candidates')
