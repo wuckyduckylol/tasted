@@ -59,13 +59,27 @@
     "lint": "expo lint",
     "typecheck": "tsc --noEmit",
     "test": "jest",
+    "test:coverage": "jest --coverage",
     "format": "prettier --write \"{app,src,supabase}/**/*.{ts,tsx,json}\""
   },
   "jest": {
     "preset": "jest-expo",
     "transformIgnorePatterns": [
       "node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@supabase/.*|react-native-svg)"
-    ]
+    ],
+    "collectCoverageFrom": [
+      "src/lib/scoring/**/*.ts",
+      "!src/lib/scoring/index.ts",
+      "!src/lib/scoring/**/*.test.ts"
+    ],
+    "coverageThreshold": {
+      "global": {
+        "statements": 95,
+        "branches": 90,
+        "functions": 95,
+        "lines": 95
+      }
+    }
   },
   "private": true
 }

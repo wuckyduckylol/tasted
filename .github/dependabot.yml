@@ -1,0 +1,19 @@
+# Weekly dependency update PRs once this repo is on GitHub.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      expo-sdk:
+        patterns:
+          - "expo*"
+          - "@expo/*"
+          - "@expo-google-fonts/*"
+          - "react-native*"
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
