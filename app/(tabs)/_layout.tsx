@@ -1,15 +1,7 @@
 import { Tabs } from 'expo-router';
-import { Text, type ColorValue } from 'react-native';
+import { CircleUserRound, House, Search, Sparkles } from 'lucide-react-native';
 
-import { colors } from '@/lib/theme';
-
-function TabGlyph({ glyph, color }: { glyph: string; color: ColorValue }) {
-  return (
-    <Text style={{ fontSize: 20, color }} accessibilityElementsHidden>
-      {glyph}
-    </Text>
-  );
-}
+import { colors, fonts } from '@/lib/theme';
 
 export default function TabsLayout() {
   return (
@@ -17,9 +9,11 @@ export default function TabsLayout() {
       screenOptions={{
         headerStyle: { backgroundColor: colors.base },
         headerTintColor: colors.text,
+        headerTitleStyle: { fontFamily: fonts.display, fontSize: 20 },
         tabBarActiveTintColor: colors.accent,
         tabBarInactiveTintColor: colors.textMuted,
-        tabBarStyle: { backgroundColor: colors.base },
+        tabBarStyle: { backgroundColor: colors.base, borderTopColor: colors.border },
+        tabBarLabelStyle: { fontFamily: fonts.bodyBold, fontSize: 11 },
         sceneStyle: { backgroundColor: colors.base },
       }}
     >
@@ -27,28 +21,30 @@ export default function TabsLayout() {
         name="index"
         options={{
           title: 'Home',
-          tabBarIcon: ({ color }) => <TabGlyph glyph="⌂" color={color} />,
+          tabBarIcon: ({ color, size }) => <House color={color} size={size} strokeWidth={2} />,
         }}
       />
       <Tabs.Screen
         name="search"
         options={{
           title: 'Search',
-          tabBarIcon: ({ color }) => <TabGlyph glyph="⌕" color={color} />,
+          tabBarIcon: ({ color, size }) => <Search color={color} size={size} strokeWidth={2} />,
         }}
       />
       <Tabs.Screen
         name="drops"
         options={{
           title: 'Drops',
-          tabBarIcon: ({ color }) => <TabGlyph glyph="✦" color={color} />,
+          tabBarIcon: ({ color, size }) => <Sparkles color={color} size={size} strokeWidth={2} />,
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
           title: 'Profile',
-          tabBarIcon: ({ color }) => <TabGlyph glyph="◉" color={color} />,
+          tabBarIcon: ({ color, size }) => (
+            <CircleUserRound color={color} size={size} strokeWidth={2} />
+          ),
         }}
       />
     </Tabs>

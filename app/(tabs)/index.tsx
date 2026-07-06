@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
+import { Trophy, Vote } from 'lucide-react-native';
 import { FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
 
 import { EmptyState, ErrorState, LoadingState, ScreenContainer, SectionHeader } from '@/components/ui';
@@ -71,14 +72,16 @@ export default function HomeScreen() {
                 onPress={() => router.push('/leaderboards')}
                 style={({ pressed }) => [styles.linkCard, pressed && styles.pressed]}
               >
-                <Text style={styles.linkLabel}>🏆 Leaderboards</Text>
+                <Trophy color={colors.accent} size={18} strokeWidth={2.2} />
+                <Text style={styles.linkLabel}>Leaderboards</Text>
               </Pressable>
               <Pressable
                 accessibilityRole="button"
                 onPress={() => router.push('/vote')}
                 style={({ pressed }) => [styles.linkCard, pressed && styles.pressed]}
               >
-                <Text style={styles.linkLabel}>🗳️ Next chain</Text>
+                <Vote color={colors.accent} size={18} strokeWidth={2.2} />
+                <Text style={styles.linkLabel}>Next chain</Text>
               </Pressable>
             </View>
             {(friendsQuery.data ?? []).length > 0 ? (
@@ -137,6 +140,8 @@ const styles = StyleSheet.create({
   linkRow: { flexDirection: 'row', gap: spacing.sm },
   linkCard: {
     flex: 1,
+    flexDirection: 'row',
+    gap: spacing.sm,
     backgroundColor: colors.card,
     borderRadius: 12,
     borderWidth: 1,
