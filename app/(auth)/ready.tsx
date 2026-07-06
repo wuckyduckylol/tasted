@@ -3,14 +3,20 @@ import { PartyPopper } from 'lucide-react-native';
 import { useEffect, useRef } from 'react';
 import { Animated, StyleSheet, View } from 'react-native';
 
+import { useReducedMotion } from '@/components/ui';
 import { StepScreen } from '@/features/onboarding/StepScreen';
 import { colors, motion, radii, spacing } from '@/lib/theme';
 
 export default function ReadyStep() {
   const router = useRouter();
+  const reducedMotion = useReducedMotion();
   const scale = useRef(new Animated.Value(0.6)).current;
 
   useEffect(() => {
+    if (reducedMotion) {
+      scale.setValue(1);
+      return;
+    }
     Animated.spring(scale, {
       toValue: 1,
       friction: 5,
@@ -18,7 +24,7 @@ export default function ReadyStep() {
       delay: motion.fast,
       useNativeDriver: true,
     }).start();
-  }, [scale]);
+  }, [scale, reducedMotion]);
 
   return (
     <StepScreen

@@ -1,6 +1,7 @@
 import type { PropsWithChildren, ReactNode } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import {
+  AccessibilityInfo,
   ActivityIndicator,
   Animated,
   Pressable,
@@ -15,6 +16,23 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { colors, fonts, minTapTarget, motion, radii, shadows, spacing, type } from '../lib/theme';
+
+/** Respects the OS "reduce motion" setting — gate decorative animations on it. */
+export function useReducedMotion(): boolean {
+  const [reduced, setReduced] = useState(false);
+  useEffect(() => {
+    let mounted = true;
+    void AccessibilityInfo.isReduceMotionEnabled().then((v) => {
+      if (mounted) setReduced(v);
+    });
+    const sub = AccessibilityInfo.addEventListener('reduceMotionChanged', setReduced);
+    return () => {
+      mounted = false;
+      sub.remove();
+    };
+  }, []);
+  return reduced;
+}
 
 export function ScreenContainer({
   children,
@@ -61,9 +79,11 @@ export function Button({
   accessibilityHint,
 }: ButtonProps) {
   const scale = useRef(new Animated.Value(1)).current;
+  const reducedMotion = useReducedMotion();
   const blocked = disabled === true || loading === true;
 
   function pressTo(value: number) {
+    if (reducedMotion) return; // pressed opacity still gives feedback
     Animated.timing(scale, {
       toValue: value,
       duration: motion.fast,
@@ -175,14 +195,15 @@ export function TextField(props: TextFieldProps) {
 /** Thin animated progress bar for multi-step flows (0..1). */
 export function ProgressBar({ progress }: { progress: number }) {
   const anim = useRef(new Animated.Value(progress)).current;
+  const reducedMotion = useReducedMotion();
 
   useEffect(() => {
     Animated.timing(anim, {
       toValue: Math.min(1, Math.max(0, progress)),
-      duration: motion.slow,
+      duration: reducedMotion ? 0 : motion.slow,
       useNativeDriver: false, // width animation
     }).start();
-  }, [anim, progress]);
+  }, [anim, progress, reducedMotion]);
 
   return (
     <View
