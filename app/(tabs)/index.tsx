@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
-import { Trophy, Vote } from 'lucide-react-native';
+import { ChevronRight, Trophy, Vote } from 'lucide-react-native';
 import { FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
 
 import { EmptyState, ErrorState, LoadingState, ScreenContainer, SectionHeader } from '@/components/ui';
@@ -8,7 +8,7 @@ import { useSession } from '@/hooks/useSession';
 import { listActiveChains } from '@/lib/db/catalog';
 import { getFriendsRecentRatings } from '@/lib/db/collab';
 import { isSupabaseConfigured } from '@/lib/config';
-import { colors, scoreColor, spacing } from '@/lib/theme';
+import { colors, fonts, radii, scoreColor, shadows, spacing, type } from '@/lib/theme';
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -120,8 +120,11 @@ export default function HomeScreen() {
             onPress={() => router.push(`/chain/${chain.id}`)}
             style={({ pressed }) => [styles.chainCard, pressed && styles.pressed]}
           >
+            <View style={styles.chainBadge}>
+              <Text style={styles.chainInitial}>{chain.name.slice(0, 1)}</Text>
+            </View>
             <Text style={styles.chainName}>{chain.name}</Text>
-            <Text style={styles.chevron}>›</Text>
+            <ChevronRight color={colors.textMuted} size={22} strokeWidth={2.2} />
           </Pressable>
         )}
         ItemSeparatorComponent={Separator}
@@ -142,43 +145,53 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     gap: spacing.sm,
-    backgroundColor: colors.card,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: colors.border,
-    minHeight: 48,
+    backgroundColor: colors.candySoft,
+    borderRadius: radii.md,
+    minHeight: 52,
     alignItems: 'center',
     justifyContent: 'center',
+    ...shadows.card,
   },
-  linkLabel: { fontSize: 15, fontWeight: '600', color: colors.text },
+  linkLabel: { fontFamily: fonts.bodyBold, fontSize: 15, color: colors.text },
   friendsBlock: { gap: spacing.sm },
   friendRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     backgroundColor: colors.card,
-    borderRadius: 12,
+    borderRadius: radii.md,
     borderWidth: 1,
     borderColor: colors.border,
     paddingHorizontal: spacing.md,
     minHeight: 48,
     gap: spacing.sm,
+    ...shadows.card,
   },
-  friendText: { flex: 1, fontSize: 14, color: colors.text },
-  friendScore: { fontSize: 16, fontWeight: '800' },
+  friendText: { flex: 1, fontFamily: fonts.bodySemiBold, fontSize: 14, color: colors.text },
+  friendScore: { fontFamily: fonts.display, fontSize: 16 },
   chainCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    gap: spacing.md,
     backgroundColor: colors.card,
-    borderRadius: 14,
+    borderRadius: radii.md,
     borderWidth: 1,
     borderColor: colors.border,
-    padding: spacing.lg,
-    minHeight: 64,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.md,
+    minHeight: 68,
     marginTop: spacing.sm,
+    ...shadows.card,
   },
+  chainBadge: {
+    width: 42,
+    height: 42,
+    borderRadius: radii.pill,
+    backgroundColor: colors.candySoft,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  chainInitial: { fontFamily: fonts.display, fontSize: 19, color: colors.accent },
   pressed: { opacity: 0.7 },
-  chainName: { fontSize: 18, fontWeight: '700', color: colors.text },
-  chevron: { fontSize: 24, color: colors.textMuted },
+  chainName: { ...type.bodyStrong, flex: 1, fontSize: 17 },
 });

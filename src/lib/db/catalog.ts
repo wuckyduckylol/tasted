@@ -63,13 +63,38 @@ export async function listNewItems(): Promise<Item[]> {
   return (data as ItemRowWithTags[]).map(mapItem);
 }
 
+/**
+ * Defense-in-depth for search text: length cap, control chars out, LIKE
+ * wildcards (% _) stripped. The query itself always goes through PostgREST
+ * as a parameter — no SQL (and certainly no shell) ever sees raw input.
+ */
+export function sanitizeSearchQuery(raw: string): string {
+  return raw
+    .replace(/[\u0000-\u001F%_]/g, '')
+    .trim()
+    .slice(0, 64);
+}
+
 export async function searchItems(query: string): Promise<Item[]> {
+  const q = sanitizeSearchQuery(query);
+  if (q.length === 0) return [];
   const { data, error } = await getSupabase()
     .from('items')
     .select(ITEM_WITH_TAGS)
     .eq('is_active', true)
-    .ilike('name', `%${query.replaceAll('%', '')}%`)
+    .ilike('name', `%${q}%`)
     .limit(30);
+  if (error) throw error;
+  return (data as ItemRowWithTags[]).map(mapItem);
+}
+
+/** Full active catalog (~450 items) — the browse pool for the search tab. */
+export async function listAllActiveItems(): Promise<Item[]> {
+  const { data, error } = await getSupabase()
+    .from('items')
+    .select(ITEM_WITH_TAGS)
+    .eq('is_active', true)
+    .order('name');
   if (error) throw error;
   return (data as ItemRowWithTags[]).map(mapItem);
 }

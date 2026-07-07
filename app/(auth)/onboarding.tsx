@@ -11,6 +11,7 @@ import {
   ErrorState,
   LoadingState,
   ScreenContainer,
+  TextField,
   Title,
 } from '@/components/ui';
 import { useForYouData } from '@/features/recommendations/hooks';
@@ -27,6 +28,7 @@ export default function OnboardingScreen() {
   const router = useRouter();
   const [step, setStep] = useState<Step>('chains');
   const [selectedChainIds, setSelectedChainIds] = useState<Set<string>>(new Set());
+  const [itemFilter, setItemFilter] = useState('');
 
   const chainsQuery = useQuery({ queryKey: ['chains'], queryFn: listActiveChains });
 
@@ -121,7 +123,12 @@ export default function OnboardingScreen() {
   }
 
   if (step === 'rate') {
-    const items = itemsQuery.data ?? [];
+    // Client-side name filter over already-loaded items: no query, no shell,
+    // nothing to inject into — the text never leaves this component.
+    const needle = itemFilter.trim().toLowerCase();
+    const items = (itemsQuery.data ?? []).filter(
+      (item) => needle.length === 0 || item.name.toLowerCase().includes(needle),
+    );
     return (
       <ScreenContainer>
         <View style={styles.header}>
@@ -131,6 +138,15 @@ export default function OnboardingScreen() {
               ? `Rate at least ${MIN_ONBOARDING_RATINGS} items you've actually had — ${ratedCount} down.`
               : `${ratedCount} rated. Keep going or continue.`}
           </Body>
+          <TextField
+            label="Find an item"
+            labelHidden
+            value={itemFilter}
+            onChangeText={(t) => setItemFilter(t.slice(0, 64))}
+            placeholder="Search these menus…"
+            autoCapitalize="none"
+            autoCorrect={false}
+          />
         </View>
         {itemsQuery.isLoading || forYou.isLoading ? (
           <LoadingState />
@@ -141,6 +157,10 @@ export default function OnboardingScreen() {
             data={items}
             keyExtractor={(item) => item.id}
             contentContainerStyle={styles.list}
+            keyboardShouldPersistTaps="handled"
+            ListEmptyComponent={
+              <EmptyState title="no matches" detail="Try a different name." />
+            }
             renderItem={({ item }) => (
               <ItemRow
                 item={item}

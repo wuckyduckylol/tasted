@@ -75,7 +75,6 @@ export default function GetStartedScreen() {
 
   return (
     <SafeAreaView style={styles.screen} edges={['top', 'bottom']}>
-      <Marquee phrases={TICKER} />
       <Confetti top={120} left={24} rotate="18deg" />
       <Confetti top={96} right={40} rotate="-12deg" />
       <Confetti top={210} right={90} rotate="30deg" />
@@ -84,7 +83,7 @@ export default function GetStartedScreen() {
         <Text style={styles.wordmark} accessibilityRole="header">
           tasted
         </Text>
-        <Text style={styles.tagline}>the right amount of delicious</Text>
+        <Text style={styles.tagline}>never order wrong again</Text>
       </View>
 
       <FlatList
@@ -116,6 +115,9 @@ export default function GetStartedScreen() {
           <View key={s.key} style={[styles.dot, i === page && styles.dotActive]} />
         ))}
       </View>
+
+      {/* Below the card so notch/status-bar insets never shift the hero layout. */}
+      <Marquee phrases={TICKER} />
 
       <View style={styles.footer}>
         <Button label="Get Started" onPress={() => router.push('/(auth)/email')} />

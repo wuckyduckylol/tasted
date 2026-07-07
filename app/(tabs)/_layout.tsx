@@ -1,5 +1,5 @@
 import { Tabs } from 'expo-router';
-import { CircleUserRound, House, Search, Sparkles } from 'lucide-react-native';
+import { CircleUserRound, House, ListOrdered, Search, Sparkles } from 'lucide-react-native';
 
 import { colors, fonts } from '@/lib/theme';
 
@@ -9,7 +9,7 @@ export default function TabsLayout() {
       screenOptions={{
         headerStyle: { backgroundColor: colors.base },
         headerTintColor: colors.text,
-        headerTitleStyle: { fontFamily: fonts.display, fontSize: 20 },
+        headerTitleStyle: { fontFamily: fonts.display, fontSize: 22 },
         tabBarActiveTintColor: colors.accent,
         tabBarInactiveTintColor: colors.textMuted,
         tabBarStyle: { backgroundColor: colors.base, borderTopColor: colors.border },
@@ -20,28 +20,39 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Home',
+          title: 'tasted',
+          tabBarLabel: 'home',
           tabBarIcon: ({ color, size }) => <House color={color} size={size} strokeWidth={2} />,
         }}
       />
       <Tabs.Screen
         name="search"
         options={{
-          title: 'Search',
+          title: 'search',
           tabBarIcon: ({ color, size }) => <Search color={color} size={size} strokeWidth={2} />,
+        }}
+      />
+      <Tabs.Screen
+        name="ranks"
+        options={{
+          title: 'your ranks',
+          tabBarLabel: 'ranks',
+          tabBarIcon: ({ color, size }) => (
+            <ListOrdered color={color} size={size} strokeWidth={2} />
+          ),
         }}
       />
       <Tabs.Screen
         name="drops"
         options={{
-          title: 'Drops',
+          title: 'drops',
           tabBarIcon: ({ color, size }) => <Sparkles color={color} size={size} strokeWidth={2} />,
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
-          title: 'Profile',
+          title: 'profile',
           tabBarIcon: ({ color, size }) => (
             <CircleUserRound color={color} size={size} strokeWidth={2} />
           ),

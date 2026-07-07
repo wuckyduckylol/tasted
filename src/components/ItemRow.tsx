@@ -1,17 +1,25 @@
 import { Image } from 'expo-image';
+import { CupSoda, IceCreamCone, Sandwich } from 'lucide-react-native';
 import { memo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { communityContextLine } from './score';
 import type { LeadDisplay } from '../features/recommendations/predict';
-import { colors, scoreColor, spacing } from '../lib/theme';
-import type { Item, ItemScore } from '../types/domain';
+import { colors, fonts, radii, scoreColor, shadows, spacing, type } from '../lib/theme';
+import type { Bucket, Item, ItemScore } from '../types/domain';
 
 interface Props {
   item: Item;
   score: ItemScore | null;
   lead: LeadDisplay;
   onPress: (itemId: string) => void;
+  /** Hide the trailing score block (e.g. search, where ordering is silent). */
+  showLead?: boolean;
+}
+
+function BucketGlyph({ bucket }: { bucket: Bucket }) {
+  const Icon = bucket === 'drinks' ? CupSoda : bucket === 'sweet' ? IceCreamCone : Sandwich;
+  return <Icon color={colors.accent} size={24} strokeWidth={1.8} />;
 }
 
 function Lead({ lead }: { lead: LeadDisplay }) {
@@ -27,7 +35,10 @@ function Lead({ lead }: { lead: LeadDisplay }) {
       );
     case 'predicted':
       return (
-        <View style={styles.leadWrap} accessibilityLabel={`Predicted for you ${lead.score.toFixed(1)}`}>
+        <View
+          style={styles.leadWrap}
+          accessibilityLabel={`Predicted for you ${lead.score.toFixed(1)}`}
+        >
           <Text style={[styles.leadScore, { color: scoreColor(lead.score) }]}>
             {lead.score.toFixed(1)}
           </Text>
@@ -36,7 +47,10 @@ function Lead({ lead }: { lead: LeadDisplay }) {
       );
     case 'community':
       return (
-        <View style={styles.leadWrap} accessibilityLabel={`${Math.round(lead.worthItPct)} percent worth it`}>
+        <View
+          style={styles.leadWrap}
+          accessibilityLabel={`${Math.round(lead.worthItPct)} percent worth it`}
+        >
           <Text style={styles.leadPct}>{Math.round(lead.worthItPct)}%</Text>
           <Text style={styles.leadCaption}>worth it</Text>
         </View>
@@ -51,7 +65,7 @@ function Lead({ lead }: { lead: LeadDisplay }) {
   }
 }
 
-export const ItemRow = memo(function ItemRow({ item, score, lead, onPress }: Props) {
+export const ItemRow = memo(function ItemRow({ item, score, lead, onPress, showLead = true }: Props) {
   return (
     <Pressable
       accessibilityRole="button"
@@ -63,7 +77,7 @@ export const ItemRow = memo(function ItemRow({ item, score, lead, onPress }: Pro
         <Image source={{ uri: item.imageUrl }} style={styles.thumb} contentFit="cover" />
       ) : (
         <View style={[styles.thumb, styles.thumbPlaceholder]}>
-          <Text style={styles.thumbGlyph}>{item.bucket === 'drinks' ? '🥤' : item.bucket === 'sweet' ? '🍦' : '🍔'}</Text>
+          <BucketGlyph bucket={item.bucket} />
         </View>
       )}
       <View style={styles.info}>
@@ -72,7 +86,7 @@ export const ItemRow = memo(function ItemRow({ item, score, lead, onPress }: Pro
         </Text>
         <Text style={styles.context}>{communityContextLine(score)}</Text>
       </View>
-      <Lead lead={lead} />
+      {showLead ? <Lead lead={lead} /> : null}
     </Pressable>
   );
 });
@@ -83,22 +97,22 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: spacing.md,
     backgroundColor: colors.card,
-    borderRadius: 14,
+    borderRadius: radii.md,
     borderWidth: 1,
     borderColor: colors.border,
     padding: spacing.md,
     minHeight: 72,
+    ...shadows.card,
   },
   pressed: { opacity: 0.7 },
-  thumb: { width: 52, height: 52, borderRadius: 10, backgroundColor: colors.border },
+  thumb: { width: 52, height: 52, borderRadius: radii.sm, backgroundColor: colors.candySoft },
   thumbPlaceholder: { alignItems: 'center', justifyContent: 'center' },
-  thumbGlyph: { fontSize: 24 },
   info: { flex: 1, gap: 2 },
-  name: { fontSize: 16, fontWeight: '600', color: colors.text },
-  context: { fontSize: 13, color: colors.textMuted },
+  name: { ...type.bodyStrong },
+  context: { fontFamily: fonts.bodySemiBold, fontSize: 13, color: colors.textMuted },
   leadWrap: { alignItems: 'center', minWidth: 56 },
-  leadScore: { fontSize: 20, fontWeight: '800' },
-  leadPct: { fontSize: 20, fontWeight: '800', color: colors.text },
-  leadForming: { fontSize: 14, fontWeight: '700', color: colors.textMuted },
-  leadCaption: { fontSize: 11, color: colors.textMuted },
+  leadScore: { fontFamily: fonts.display, fontSize: 20 },
+  leadPct: { fontFamily: fonts.display, fontSize: 20, color: colors.text },
+  leadForming: { fontFamily: fonts.bodyBold, fontSize: 14, color: colors.textMuted },
+  leadCaption: { fontFamily: fonts.bodySemiBold, fontSize: 11, color: colors.textMuted },
 });

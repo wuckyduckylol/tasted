@@ -51,7 +51,7 @@ export function Title({ children }: { children: ReactNode }) {
 
 export function SectionHeader({ children }: { children: ReactNode }) {
   return (
-    <Text accessibilityRole="header" style={type.section}>
+    <Text accessibilityRole="header" style={styles.sectionHeader}>
       {children}
     </Text>
   );
@@ -264,6 +264,13 @@ const styles = StyleSheet.create({
   },
   stateText: { textAlign: 'center', marginBottom: spacing.sm },
   bodyMuted: { color: colors.textMuted },
+  sectionHeader: {
+    fontFamily: fonts.displayMedium,
+    fontSize: 19,
+    lineHeight: 26,
+    color: colors.text,
+    textTransform: 'lowercase',
+  },
   button: {
     minHeight: minTapTarget + 8,
     borderRadius: radii.pill,
