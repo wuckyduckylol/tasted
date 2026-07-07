@@ -7,9 +7,11 @@ export default function TabsLayout() {
   return (
     <Tabs
       screenOptions={{
-        headerStyle: { backgroundColor: colors.base },
-        headerTintColor: colors.text,
-        headerTitleStyle: { fontFamily: fonts.display, fontSize: 22 },
+        // Candy header band ties every tab back to the intro screen's vibe.
+        headerStyle: { backgroundColor: colors.candy },
+        headerTintColor: colors.baseDark,
+        headerTitleStyle: { fontFamily: fonts.display, fontSize: 22, color: colors.baseDark },
+        headerShadowVisible: false,
         tabBarActiveTintColor: colors.accent,
         tabBarInactiveTintColor: colors.textMuted,
         tabBarStyle: { backgroundColor: colors.base, borderTopColor: colors.border },

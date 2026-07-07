@@ -147,6 +147,8 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
     backgroundColor: colors.candySoft,
     borderRadius: radii.md,
+    borderWidth: 1.5,
+    borderColor: colors.candy,
     minHeight: 52,
     alignItems: 'center',
     justifyContent: 'center',

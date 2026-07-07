@@ -15,7 +15,7 @@ import { LoadingState } from '@/components/ui';
 import { SIGNED_IN_AUTH_ROUTES } from '@/features/onboarding/steps';
 import { useSession } from '@/hooks/useSession';
 import { isSupabaseConfigured } from '@/lib/config';
-import { colors } from '@/lib/theme';
+import { colors, fonts } from '@/lib/theme';
 
 void SplashScreen.preventAutoHideAsync();
 
@@ -73,8 +73,12 @@ export default function RootLayout() {
       {ready && fontsReady ? (
         <Stack
           screenOptions={{
-            headerStyle: { backgroundColor: colors.base },
-            headerTintColor: colors.text,
+            headerStyle: { backgroundColor: colors.candy },
+            headerTintColor: colors.baseDark,
+            headerTitleStyle: { fontFamily: fonts.display, color: colors.baseDark },
+            headerShadowVisible: false,
+            // Plain chevron — no "(tabs)" route-group label leaking into iOS back buttons.
+            headerBackButtonDisplayMode: 'minimal',
             contentStyle: { backgroundColor: colors.base },
           }}
         >
