@@ -94,6 +94,7 @@ export default function GetStartedScreen() {
         pagingEnabled
         showsHorizontalScrollIndicator={false}
         onMomentumScrollEnd={onMomentumEnd}
+        style={styles.carousel}
         renderItem={({ item }) => {
           const Icon = item.icon;
           return (
@@ -116,7 +117,9 @@ export default function GetStartedScreen() {
         ))}
       </View>
 
-      {/* Below the card so notch/status-bar insets never shift the hero layout. */}
+      {/* Flexible pink breathing room keeps the ticker + CTA anchored low. */}
+      <View style={styles.spacer} />
+
       <Marquee phrases={TICKER} />
 
       <View style={styles.footer}>
@@ -146,7 +149,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.accent,
     opacity: 0.85,
   },
-  brand: { alignItems: 'center', paddingTop: spacing.xl, gap: 0 },
+  brand: { alignItems: 'center', paddingTop: spacing.xxl, gap: 0 },
   wordmark: {
     fontFamily: fonts.display,
     fontSize: 76,
@@ -155,7 +158,9 @@ const styles = StyleSheet.create({
     letterSpacing: -2,
   },
   tagline: { fontFamily: fonts.bodyBold, fontSize: 15, color: colors.baseDark, marginTop: -6 },
-  slide: { alignItems: 'center', justifyContent: 'center', padding: spacing.lg },
+  carousel: { flexGrow: 0, marginTop: spacing.md },
+  slide: { alignItems: 'center', paddingHorizontal: spacing.lg, paddingVertical: spacing.sm },
+  spacer: { flex: 1 },
   slideCard: {
     alignItems: 'center',
     gap: spacing.md,
