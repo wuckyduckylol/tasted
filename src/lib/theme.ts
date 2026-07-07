@@ -13,6 +13,8 @@ export const colors = {
   accent: '#FF5A36', // flame coral
   accentSoft: '#FFEDE7', // coral tint — selected states, chips, highlights
   accentBorder: '#FFC7B8', // coral border for selected cards
+  candy: '#F290B9', // candy pink — hero/celebration surfaces (dark text only)
+  candySoft: '#FCE9F2', // pink tint — chips and soft fills on cream
   // Verdict colors — reserved for scores ONLY (never decorative use).
   loved: '#2FBF71',
   fine: '#F5A623',
@@ -34,12 +36,13 @@ export const radii = { xs: 8, sm: 10, md: 14, lg: 20, xl: 28, pill: 999 } as con
 export const minTapTarget = 44;
 
 /**
- * Font families (Fredoka display + Nunito body — loaded in app/_layout.tsx).
+ * Font families (Baloo 2 display + Nunito body — loaded in app/_layout.tsx).
+ * Chunky rounded lowercase display per the happly-style art direction.
  * Weights are baked into family names; do NOT combine with fontWeight on Android.
  */
 export const fonts = {
-  display: 'Fredoka_600SemiBold',
-  displayMedium: 'Fredoka_500Medium',
+  display: 'Baloo2_800ExtraBold',
+  displayMedium: 'Baloo2_700Bold',
   body: 'Nunito_400Regular',
   bodySemiBold: 'Nunito_600SemiBold',
   bodyBold: 'Nunito_700Bold',

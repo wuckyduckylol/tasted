@@ -1,4 +1,4 @@
-import { Fredoka_500Medium, Fredoka_600SemiBold } from '@expo-google-fonts/fredoka';
+import { Baloo2_700Bold, Baloo2_800ExtraBold } from '@expo-google-fonts/baloo-2';
 import {
   Nunito_400Regular,
   Nunito_600SemiBold,
@@ -54,8 +54,8 @@ function useAuthGate() {
 export default function RootLayout() {
   const ready = useAuthGate();
   const [fontsLoaded, fontsError] = useFonts({
-    Fredoka_500Medium,
-    Fredoka_600SemiBold,
+    Baloo2_700Bold,
+    Baloo2_800ExtraBold,
     Nunito_400Regular,
     Nunito_600SemiBold,
     Nunito_700Bold,

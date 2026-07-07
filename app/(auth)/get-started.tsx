@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { Marquee } from '@/components/Marquee';
 import { Button } from '@/components/ui';
 import { colors, fonts, radii, shadows, spacing, type } from '@/lib/theme';
 
@@ -27,22 +28,40 @@ const SLIDES: Slide[] = [
   {
     key: 'rank',
     icon: Trophy,
-    title: 'Rank',
+    title: 'rank',
     text: 'Score every menu item you actually eat — build your personal tier list, dish by dish.',
   },
   {
     key: 'share',
     icon: Share2,
-    title: 'Share',
+    title: 'share',
     text: 'Show friends your rankings, see theirs, and settle the fry debate for good.',
   },
   {
     key: 'discover',
     icon: Compass,
-    title: 'Discover',
+    title: 'discover',
     text: 'Get predictions for what you’d love next, tuned to your taste.',
   },
 ];
+
+const TICKER = [
+  'rank every bite',
+  'settle the fry debate',
+  'find your next favorite',
+  'share your tier list',
+];
+
+/** Decorative happly-style confetti square. */
+function Confetti({ top, left, right, rotate }: { top: number; left?: number; right?: number; rotate: string }) {
+  return (
+    <View
+      accessibilityElementsHidden
+      importantForAccessibility="no"
+      style={[styles.confetti, { top, left, right, transform: [{ rotate }] }]}
+    />
+  );
+}
 
 export default function GetStartedScreen() {
   const router = useRouter();
@@ -55,10 +74,17 @@ export default function GetStartedScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.screen}>
+    <SafeAreaView style={styles.screen} edges={['top', 'bottom']}>
+      <Marquee phrases={TICKER} />
+      <Confetti top={120} left={24} rotate="18deg" />
+      <Confetti top={96} right={40} rotate="-12deg" />
+      <Confetti top={210} right={90} rotate="30deg" />
+
       <View style={styles.brand}>
-        <Text style={styles.wordmark}>Tasted</Text>
-        <Text style={styles.tagline}>Start your taste journey</Text>
+        <Text style={styles.wordmark} accessibilityRole="header">
+          tasted
+        </Text>
+        <Text style={styles.tagline}>the right amount of delicious</Text>
       </View>
 
       <FlatList
@@ -109,22 +135,34 @@ export default function GetStartedScreen() {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.base },
-  brand: { alignItems: 'center', paddingTop: spacing.xxl, gap: spacing.xs },
-  wordmark: { fontFamily: fonts.display, fontSize: 52, color: colors.accent },
-  tagline: { ...type.body, color: colors.textMuted },
+  screen: { flex: 1, backgroundColor: colors.candy },
+  confetti: {
+    position: 'absolute',
+    width: 14,
+    height: 14,
+    borderRadius: 3,
+    backgroundColor: colors.accent,
+    opacity: 0.85,
+  },
+  brand: { alignItems: 'center', paddingTop: spacing.xl, gap: 0 },
+  wordmark: {
+    fontFamily: fonts.display,
+    fontSize: 76,
+    lineHeight: 88,
+    color: colors.base,
+    letterSpacing: -2,
+  },
+  tagline: { fontFamily: fonts.bodyBold, fontSize: 15, color: colors.baseDark, marginTop: -6 },
   slide: { alignItems: 'center', justifyContent: 'center', padding: spacing.lg },
   slideCard: {
     alignItems: 'center',
     gap: spacing.md,
     backgroundColor: colors.card,
     borderRadius: radii.xl,
-    borderWidth: 1,
-    borderColor: colors.border,
     paddingVertical: spacing.xl,
     paddingHorizontal: spacing.lg,
     alignSelf: 'stretch',
-    ...shadows.card,
+    ...shadows.raised,
   },
   iconBadge: {
     width: 96,
@@ -134,7 +172,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  slideTitle: { ...type.heading },
+  slideTitle: { fontFamily: fonts.display, fontSize: 26, lineHeight: 32, color: colors.text },
   slideText: { ...type.body, color: colors.textMuted, textAlign: 'center' },
   dots: {
     flexDirection: 'row',
@@ -146,11 +184,11 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: radii.pill,
-    backgroundColor: colors.border,
+    backgroundColor: 'rgba(23, 21, 15, 0.25)',
   },
-  dotActive: { backgroundColor: colors.accent, width: 20 },
+  dotActive: { backgroundColor: colors.baseDark, width: 20 },
   footer: { padding: spacing.lg, gap: spacing.md },
   loginLink: { minHeight: 44, alignItems: 'center', justifyContent: 'center' },
-  loginText: { fontFamily: fonts.bodySemiBold, fontSize: 15, color: colors.textMuted },
-  loginTextAccent: { color: colors.accent, fontFamily: fonts.bodyBold },
+  loginText: { fontFamily: fonts.bodySemiBold, fontSize: 15, color: colors.baseDark },
+  loginTextAccent: { fontFamily: fonts.bodyExtraBold, color: colors.base },
 });
