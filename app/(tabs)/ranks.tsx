@@ -1,25 +1,13 @@
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { useMemo } from 'react';
-import { Pressable, RefreshControl, SectionList, StyleSheet, Text, View } from 'react-native';
+import { FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
 
 import { EmptyState, ErrorState, LoadingState, ScreenContainer } from '@/components/ui';
 import { useSession } from '@/hooks/useSession';
 import { listActiveChains } from '@/lib/db/catalog';
-import { listMyRatingsWithItems, type RatingWithItem } from '@/lib/db/ratings';
+import { listMyRatingsWithItems } from '@/lib/db/ratings';
 import { bandColor, colors, fonts, radii, shadows, spacing, type } from '@/lib/theme';
-import type { Band } from '@/types/domain';
-
-const BAND_ORDER: Band[] = ['loved', 'fine', 'disliked'];
-const BAND_LABEL: Record<Band, string> = {
-  loved: 'loved it',
-  fine: 'it was fine',
-  disliked: 'didn’t like it',
-};
-
-interface RankedEntry extends RatingWithItem {
-  rank: number;
-}
 
 export default function RanksScreen() {
   const router = useRouter();
@@ -38,17 +26,14 @@ export default function RanksScreen() {
     [chainsQuery.data],
   );
 
-  const sections = useMemo(() => {
-    const sorted = [...(ratingsQuery.data ?? [])].sort(
-      (a, b) => b.rating.personalScore - a.rating.personalScore,
-    );
-    const ranked: RankedEntry[] = sorted.map((entry, i) => ({ ...entry, rank: i + 1 }));
-    return BAND_ORDER.map((band) => ({
-      band,
-      title: BAND_LABEL[band],
-      data: ranked.filter((e) => e.rating.band === band),
-    })).filter((s) => s.data.length > 0);
-  }, [ratingsQuery.data]);
+  // One continuous tier list — the band shows through the score color alone.
+  const ranked = useMemo(
+    () =>
+      [...(ratingsQuery.data ?? [])].sort(
+        (a, b) => b.rating.personalScore - a.rating.personalScore,
+      ),
+    [ratingsQuery.data],
+  );
 
   if (ratingsQuery.isLoading) {
     return (
@@ -67,11 +52,10 @@ export default function RanksScreen() {
 
   return (
     <ScreenContainer>
-      <SectionList
-        sections={sections}
+      <FlatList
+        data={ranked}
         keyExtractor={(entry) => entry.rating.id}
         contentContainerStyle={styles.list}
-        stickySectionHeadersEnabled={false}
         refreshControl={
           <RefreshControl
             refreshing={false}
@@ -85,20 +69,14 @@ export default function RanksScreen() {
             detail="Rate anything you’ve eaten and your tier list starts here."
           />
         }
-        renderSectionHeader={({ section }) => (
-          <View style={styles.sectionHeader}>
-            <View style={[styles.bandDot, { backgroundColor: bandColor(section.band as Band) }]} />
-            <Text style={styles.sectionTitle}>{section.title}</Text>
-          </View>
-        )}
-        renderItem={({ item: entry }) => (
+        renderItem={({ item: entry, index }) => (
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel={`Number ${entry.rank}: ${entry.item.name}, your score ${entry.rating.personalScore.toFixed(1)}`}
+            accessibilityLabel={`Number ${index + 1}: ${entry.item.name}, your score ${entry.rating.personalScore.toFixed(1)}`}
             onPress={() => router.push(`/item/${entry.item.id}`)}
             style={({ pressed }) => [styles.row, pressed && { opacity: 0.7 }]}
           >
-            <Text style={styles.rank}>{entry.rank}</Text>
+            <Text style={styles.rank}>{index + 1}</Text>
             <View style={styles.info}>
               <Text style={styles.name} numberOfLines={1}>
                 {entry.item.name}
@@ -113,7 +91,6 @@ export default function RanksScreen() {
           </Pressable>
         )}
         ItemSeparatorComponent={() => <View style={{ height: spacing.sm }} />}
-        SectionSeparatorComponent={() => <View style={{ height: spacing.sm }} />}
       />
     </ScreenContainer>
   );
@@ -121,18 +98,6 @@ export default function RanksScreen() {
 
 const styles = StyleSheet.create({
   list: { padding: spacing.md, paddingBottom: spacing.xl },
-  sectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-    paddingVertical: spacing.sm,
-  },
-  bandDot: { width: 10, height: 10, borderRadius: radii.pill },
-  sectionTitle: {
-    fontFamily: fonts.displayMedium,
-    fontSize: 19,
-    color: colors.text,
-  },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
