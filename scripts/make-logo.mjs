@@ -6,9 +6,11 @@
  * the SVGs to JPEG.)
  *
  * Outputs, in assets/logo/:
- *   wordmark (wide)   tasted-{coral,cream-on-candy,charcoal}.svg + .jpg
- *   profile pic (1:1) tasted-pfp-{candy,cream}.svg + .jpg  — padded for the
- *                     circle crop most social platforms apply
+ *   wordmark (wide)   tasted-{coral,cream-on-candy,charcoal}.svg + .png + .jpg
+ *   profile pic (1:1) tasted-pfp-{candy,cream}.svg + .png + .jpg  — padded for
+ *                     the circle crop most social platforms apply
+ * PNG keeps transparency (coral/charcoal have no background); JPEG has no alpha
+ * so those two are flattened onto cream.
  */
 import { writeFileSync } from 'node:fs';
 import * as fontkit from 'fontkit';
@@ -77,31 +79,31 @@ function svg(box, fill, { bg, rx = 0 } = {}) {
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${n(box.vx)} ${n(box.vy)} ${n(box.w)} ${n(box.h)}" role="img" aria-label="tasted">${rect}${inner(fill)}</svg>\n`;
 }
 
-/** Rasterize an SVG string to a crisp JPEG (flattened onto cream — JPEG has no alpha). */
-async function jpeg(svgStr, file, targetW) {
-  const buf = Buffer.from(svgStr);
-  await sharp(buf, { density: 384 })
-    .resize({ width: targetW })
+/** Rasterize an SVG string to crisp PNG (keeps alpha) + JPEG (flattened onto cream). */
+async function raster(svgStr, file, targetW) {
+  const base = () => sharp(Buffer.from(svgStr), { density: 384 }).resize({ width: targetW });
+  await base().png({ compressionLevel: 9 }).toFile(`assets/logo/${file}.png`);
+  await base()
     .flatten({ background: CREAM })
     .jpeg({ quality: 92, chromaSubsampling: '4:4:4' })
-    .toFile(`assets/logo/${file}`);
+    .toFile(`assets/logo/${file}.jpg`);
 }
 
 const wide = wideBox();
 const pfp = squareBox();
 
 const assets = [
-  { file: 'tasted-coral', box: wide, fill: CORAL, opts: {}, jpgW: 1200 },
-  { file: 'tasted-cream-on-candy', box: wide, fill: CREAM, opts: { bg: CANDY, rx: 48 }, jpgW: 1200 },
-  { file: 'tasted-charcoal', box: wide, fill: CHARCOAL, opts: {}, jpgW: 1200 },
-  { file: 'tasted-pfp-candy', box: pfp, fill: CREAM, opts: { bg: CANDY }, jpgW: 1024 },
-  { file: 'tasted-pfp-cream', box: pfp, fill: CORAL, opts: { bg: CREAM }, jpgW: 1024 },
+  { file: 'tasted-coral', box: wide, fill: CORAL, opts: {}, px: 1200 },
+  { file: 'tasted-cream-on-candy', box: wide, fill: CREAM, opts: { bg: CANDY, rx: 48 }, px: 1200 },
+  { file: 'tasted-charcoal', box: wide, fill: CHARCOAL, opts: {}, px: 1200 },
+  { file: 'tasted-pfp-candy', box: pfp, fill: CREAM, opts: { bg: CANDY }, px: 1024 },
+  { file: 'tasted-pfp-cream', box: pfp, fill: CORAL, opts: { bg: CREAM }, px: 1024 },
 ];
 
 for (const a of assets) {
   const s = svg(a.box, a.fill, a.opts);
   writeFileSync(`assets/logo/${a.file}.svg`, s);
-  await jpeg(s, `${a.file}.jpg`, a.jpgW);
+  await raster(s, a.file, a.px);
 }
 
-console.log(`done: ${assets.length} logos (svg + jpg) · wide ${n(wide.w)}x${n(wide.h)} · pfp ${n(pfp.w)}²`);
+console.log(`done: ${assets.length} logos (svg + png + jpg) · wide ${n(wide.w)}x${n(wide.h)} · pfp ${n(pfp.w)}²`);
