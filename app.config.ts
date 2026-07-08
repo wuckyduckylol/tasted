@@ -16,7 +16,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   android: {
     package: 'com.tasted.app',
     adaptiveIcon: {
-      backgroundColor: '#FAF7F2',
+      backgroundColor: '#F290B9',
       foregroundImage: './assets/images/android-icon-foreground.png',
       backgroundImage: './assets/images/android-icon-background.png',
       monochromeImage: './assets/images/android-icon-monochrome.png',
@@ -31,9 +31,9 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     [
       'expo-splash-screen',
       {
-        backgroundColor: '#FAF7F2',
+        backgroundColor: '#F290B9',
         image: './assets/images/splash-icon.png',
-        imageWidth: 76,
+        imageWidth: 140,
       },
     ],
     'expo-secure-store',

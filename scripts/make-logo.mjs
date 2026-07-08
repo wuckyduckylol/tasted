@@ -106,4 +106,42 @@ for (const a of assets) {
   await raster(s, a.file, a.px);
 }
 
-console.log(`done: ${assets.length} logos (svg + png + jpg) · wide ${n(wide.w)}x${n(wide.h)} · pfp ${n(pfp.w)}²`);
+// --- App icon: single "t" glyph, centered on a square canvas ---------------
+const tGlyph = font.layout('t').glyphs[0];
+const tb = tGlyph.bbox;
+const tcx = (tb.minX + tb.maxX) / 2;
+const tcy = (tb.minY + tb.maxY) / 2;
+const tHeightU = tb.maxY - tb.minY;
+
+/** Square icon of the "t". frac = glyph height as a share of the canvas. */
+function iconSvg({ bg, fill, frac, size = 1024 }) {
+  const sc = (size * frac) / tHeightU;
+  const rect = bg ? `<rect width="${size}" height="${size}" fill="${bg}"/>` : '';
+  const tf = `translate(${size / 2} ${size / 2}) scale(${sc.toFixed(5)} ${(-sc).toFixed(5)}) translate(${(-tcx).toFixed(2)} ${(-tcy).toFixed(2)})`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${size} ${size}" role="img" aria-label="tasted">${rect}<g transform="${tf}" fill="${fill}"><path d="${tGlyph.path.toSVG()}"/></g></svg>`;
+}
+
+async function iconPng(svgStr, file, size, opaqueBg) {
+  let p = sharp(Buffer.from(svgStr), { density: 512 }).resize(size, size);
+  if (opaqueBg) p = p.flatten({ background: opaqueBg }); // iOS icons must have no alpha
+  await p.png({ compressionLevel: 9 }).toFile(`assets/images/${file}`);
+}
+
+// Brand-kit copy of the icon (full-bleed, opaque candy).
+writeFileSync('assets/logo/tasted-icon.svg', iconSvg({ bg: CANDY, fill: CREAM, frac: 0.52 }));
+
+// iOS + main Expo icon: opaque, full-bleed.
+await iconPng(iconSvg({ bg: CANDY, fill: CREAM, frac: 0.52 }), 'icon.png', 1024, CANDY);
+// Web favicon.
+await iconPng(iconSvg({ bg: CANDY, fill: CREAM, frac: 0.52 }), 'favicon.png', 196, CANDY);
+// Android adaptive: glyph in the ~66% safe zone; system masks the rest.
+await iconPng(iconSvg({ fill: CREAM, frac: 0.44 }), 'android-icon-foreground.png', 1024);
+await iconPng(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024"><rect width="1024" height="1024" fill="${CANDY}"/></svg>`, 'android-icon-background.png', 1024, CANDY);
+// Android 13 themed icon: shape only, system tints it — white on transparent.
+await iconPng(iconSvg({ fill: '#FFFFFF', frac: 0.44 }), 'android-icon-monochrome.png', 1024);
+// Splash mark: cream "t" on transparent (splash bg is candy, set in app.config.ts).
+await iconPng(iconSvg({ fill: CREAM, frac: 0.55 }), 'splash-icon.png', 1024);
+
+console.log(
+  `done: ${assets.length} logos (svg+png+jpg) · wide ${n(wide.w)}x${n(wide.h)} · pfp ${n(pfp.w)}² · app icon set`,
+);
