@@ -58,5 +58,6 @@ Last reviewed: 2026-07-06. Re-review before public launch.
 1. **Create the GitHub repo & push** — activates CI, Dependabot, secret scanning, PR review flow. (Everything is committed and ready.)
 2. **Apply migration `20260705000004`** — avatars bucket + favorites table (SQL Editor paste, or hand the agent an `sbp_` token). Currently blocks avatar upload + top-3 save.
 3. **Privacy policy + support email** — required for App Store submission; drives the retention wording above.
+4. **Pre-launch trademark counsel check** — chain names (nominative use, disclaimer in place) and the candy-pink + coral palette's adjacency to Dunkin' trade dress (owner reviewed options on 2026-07-07 and accepted the risk; shades and product category differ).
 4. Decide **Supabase Pro (PITR backups)** at launch.
 5. Later: Twilio (phone auth), Apple/Google OAuth creds, RevenueCat (all SPEC §15).
