@@ -13,6 +13,7 @@ import { useEffect, useState } from 'react';
 
 import { LoadingState } from '@/components/ui';
 import { capture, identify, resetIdentity } from '@/features/analytics';
+import { hydrateConsent } from '@/features/analytics/consent';
 import { SIGNED_IN_AUTH_ROUTES } from '@/features/onboarding/steps';
 import { useSession } from '@/hooks/useSession';
 import { isSupabaseConfigured } from '@/lib/config';
@@ -76,6 +77,7 @@ export default function RootLayout() {
   }, [ready, fontsReady]);
 
   useEffect(() => {
+    void hydrateConsent();
     capture('app_opened');
   }, []);
 
