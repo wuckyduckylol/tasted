@@ -15,7 +15,8 @@ import {
   TextField,
   Title,
 } from '@/components/ui';
-import { signOut } from '@/features/auth/api';
+import { useConsent } from '@/features/analytics/consent';
+import { signOut, updateAnalyticsConsent } from '@/features/auth/api';
 import { useSession } from '@/hooks/useSession';
 import { listActiveChains } from '@/lib/db/catalog';
 import { findProfileByUsername } from '@/lib/db/collab';
@@ -30,6 +31,15 @@ export default function ProfileScreen() {
   const queryClient = useQueryClient();
   const { session } = useSession();
   const userId = session?.user.id;
+  const analyticsEnabled = useConsent((s) => s.analyticsEnabled);
+  const setAnalyticsEnabled = useConsent((s) => s.setAnalyticsEnabled);
+
+  function toggleAnalytics(value: boolean) {
+    setAnalyticsEnabled(value); // local gate flips immediately
+    void updateAnalyticsConsent(value).catch(() => {
+      // metadata mirror is best-effort; the local choice already took effect
+    });
+  }
 
   const profileQuery = useQuery({
     queryKey: ['profile', userId],
@@ -169,6 +179,15 @@ export default function ProfileScreen() {
                 trackColor={{ true: colors.accent }}
               />
             </View>
+            <View style={styles.settingsRow}>
+              <Body>Share anonymous usage</Body>
+              <Switch
+                accessibilityLabel="Share anonymous usage analytics"
+                value={analyticsEnabled}
+                onValueChange={toggleAnalytics}
+                trackColor={{ true: colors.accent }}
+              />
+            </View>
             <View style={styles.followBlock}>
               <SectionHeader>Find friends</SectionHeader>
               <TextField
@@ -194,6 +213,11 @@ export default function ProfileScreen() {
                 label="Share tier list"
                 variant="secondary"
                 onPress={() => router.push('/share')}
+              />
+              <Button
+                label="Privacy policy"
+                variant="ghost"
+                onPress={() => router.push('/privacy')}
               />
               <Button label="Sign out" variant="secondary" onPress={() => void signOut()} />
             </View>

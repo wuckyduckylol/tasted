@@ -46,5 +46,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     // Set in .env (never committed). See SPEC.md Section 15.
     supabaseUrl: process.env.EXPO_PUBLIC_SUPABASE_URL ?? '',
     supabaseAnonKey: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? '',
+    posthogKey: process.env.EXPO_PUBLIC_POSTHOG_KEY ?? '',
+    posthogHost: process.env.EXPO_PUBLIC_POSTHOG_HOST ?? '',
   },
 });

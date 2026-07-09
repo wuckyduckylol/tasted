@@ -22,6 +22,8 @@ export function getSupabase(): SupabaseClient<Database> {
         autoRefreshToken: true,
         persistSession: true,
         detectSessionInUrl: false,
+        // PKCE lets the native OAuth flow exchange the returned code for a session.
+        flowType: 'pkce',
       },
     });
   }

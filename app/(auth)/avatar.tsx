@@ -35,7 +35,7 @@ export default function AvatarStep() {
     try {
       const publicUrl = await uploadAvatar(session.user.id, localUri);
       await updateMyProfile(session.user.id, { avatarUrl: publicUrl });
-      router.push('/(auth)/welcome');
+      router.push('/(auth)/consent');
     } catch {
       setError('Could not upload your photo. Try again, or skip for now.');
     } finally {
@@ -48,7 +48,7 @@ export default function AvatarStep() {
       step="avatar"
       title="Add a profile pic?"
       subtitle="Put a face to the takes. You can always change it later."
-      onSkip={() => router.push('/(auth)/welcome')}
+      onSkip={() => router.push('/(auth)/consent')}
       ctaLabel={localUri ? 'Next' : 'Choose a photo'}
       onCta={localUri ? handleNext : () => void handlePick()}
       ctaLoading={saving}

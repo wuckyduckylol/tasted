@@ -1,5 +1,10 @@
+import * as Linking from 'expo-linking';
+import * as WebBrowser from 'expo-web-browser';
+
 import { getSupabase } from '../../lib/supabase';
 import type { SignInInput, SignUpInput } from './validation';
+
+export type OAuthProvider = 'apple' | 'google';
 
 /** Maps Supabase auth errors to user-friendly messages (SPEC 12.5). */
 function friendlyAuthError(message: string): string {
@@ -22,7 +27,40 @@ function friendlyAuthError(message: string): string {
   if (msg.includes('token has expired') || msg.includes('otp_expired') || msg.includes('invalid otp')) {
     return 'That code expired or didn’t match. Request a new one.';
   }
+  if (msg.includes('provider is not enabled') || msg.includes('unsupported provider')) {
+    return 'That sign-in option isn’t set up yet on this build (see docs/oauth-setup.md).';
+  }
   return `Could not sign you in (${message}).`;
+}
+
+/**
+ * Sign in with Apple or Google via Supabase OAuth. Opens the provider in a
+ * secure in-app browser and exchanges the returned PKCE code for a session.
+ * Returns false if the user cancels. Requires the provider to be enabled in
+ * Supabase with real credentials (docs/oauth-setup.md) and a native/dev build —
+ * the OAuth redirect can't complete in Expo Go or the web preview.
+ */
+export async function signInWithProvider(provider: OAuthProvider): Promise<boolean> {
+  const redirectTo = Linking.createURL('auth-callback');
+  const { data, error } = await getSupabase().auth.signInWithOAuth({
+    provider,
+    options: { redirectTo, skipBrowserRedirect: true },
+  });
+  if (error) throw new Error(friendlyAuthError(error.message));
+  if (!data?.url) throw new Error('Could not start sign-in. Try again.');
+
+  const result = await WebBrowser.openAuthSessionAsync(data.url, redirectTo);
+  if (result.type !== 'success') return false; // dismissed / cancelled
+
+  const url = new URL(result.url);
+  const errorDescription = url.searchParams.get('error_description');
+  if (errorDescription) throw new Error(errorDescription);
+
+  const code = url.searchParams.get('code');
+  if (!code) throw new Error('Sign-in did not complete. Try again.');
+  const { error: exchangeError } = await getSupabase().auth.exchangeCodeForSession(code);
+  if (exchangeError) throw new Error(friendlyAuthError(exchangeError.message));
+  return true;
 }
 
 export async function signInWithPassword(input: SignInInput): Promise<void> {
@@ -80,6 +118,22 @@ export async function verifyPhoneOtp(phoneE164: string, token: string): Promise<
     phone: phoneE164,
     token,
     type: 'sms',
+  });
+  if (error) throw new Error(friendlyAuthError(error.message));
+}
+
+/** Records that the user agreed to personalization (stored on the auth user). */
+export async function attachPersonalizationConsent(): Promise<void> {
+  const { error } = await getSupabase().auth.updateUser({
+    data: { personalization_consent_at: new Date().toISOString() },
+  });
+  if (error) throw new Error(friendlyAuthError(error.message));
+}
+
+/** Mirrors the analytics opt-in/out choice onto the auth user for the record. */
+export async function updateAnalyticsConsent(enabled: boolean): Promise<void> {
+  const { error } = await getSupabase().auth.updateUser({
+    data: { analytics_consent: enabled, analytics_consent_at: new Date().toISOString() },
   });
   if (error) throw new Error(friendlyAuthError(error.message));
 }

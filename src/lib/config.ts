@@ -4,6 +4,8 @@ import { z } from 'zod';
 const extraSchema = z.object({
   supabaseUrl: z.string().default(''),
   supabaseAnonKey: z.string().default(''),
+  posthogKey: z.string().default(''),
+  posthogHost: z.string().default('https://us.i.posthog.com'),
 });
 
 const extra = extraSchema.parse(Constants.expoConfig?.extra ?? {});
@@ -11,6 +13,8 @@ const extra = extraSchema.parse(Constants.expoConfig?.extra ?? {});
 export const config = {
   supabaseUrl: extra.supabaseUrl,
   supabaseAnonKey: extra.supabaseAnonKey,
+  posthogKey: extra.posthogKey,
+  posthogHost: extra.posthogHost || 'https://us.i.posthog.com',
 } as const;
 
 /**
@@ -19,6 +23,9 @@ export const config = {
  */
 export const isSupabaseConfigured =
   config.supabaseUrl.length > 0 && config.supabaseAnonKey.length > 0;
+
+/** True once a PostHog project key is set; analytics no-ops otherwise. */
+export const isAnalyticsConfigured = config.posthogKey.length > 0;
 
 /** Tunables from SPEC.md Section 5. Keep in sync with supabase/migrations. */
 export const scoringConfig = {

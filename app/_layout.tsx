@@ -12,6 +12,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { useEffect, useState } from 'react';
 
 import { LoadingState } from '@/components/ui';
+import { capture, identify, resetIdentity } from '@/features/analytics';
 import { SIGNED_IN_AUTH_ROUTES } from '@/features/onboarding/steps';
 import { useSession } from '@/hooks/useSession';
 import { isSupabaseConfigured } from '@/lib/config';
@@ -34,6 +35,12 @@ function useAuthGate() {
   const segments = useSegments();
   const router = useRouter();
   const [ready, setReady] = useState(false);
+
+  // Tie analytics events to the signed-in user (no PII — just the uuid).
+  useEffect(() => {
+    if (session) identify(session.user.id);
+    else resetIdentity();
+  }, [session]);
 
   useEffect(() => {
     if (isLoading) return;
@@ -68,6 +75,10 @@ export default function RootLayout() {
     if (ready && fontsReady) void SplashScreen.hideAsync();
   }, [ready, fontsReady]);
 
+  useEffect(() => {
+    capture('app_opened');
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       {ready && fontsReady ? (
@@ -88,6 +99,7 @@ export default function RootLayout() {
           <Stack.Screen name="item/[itemId]" options={{ title: '' }} />
           <Stack.Screen name="rate/[itemId]" options={{ title: 'Rate', presentation: 'modal' }} />
           <Stack.Screen name="vote" options={{ title: 'Vote for the next chain' }} />
+          <Stack.Screen name="privacy" options={{ title: 'Privacy' }} />
         </Stack>
       ) : (
         <LoadingState />
