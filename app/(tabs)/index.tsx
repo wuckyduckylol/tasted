@@ -14,29 +14,9 @@ import { listActiveChains, listAllActiveItems, listNewItems } from '@/lib/db/cat
 import { getFriendsRecentRatings } from '@/lib/db/collab';
 import { listChainCandidates } from '@/lib/db/votes';
 import { isSupabaseConfigured, scoringConfig } from '@/lib/config';
+import { weeklyStreak } from '@/lib/streak';
 import { colors, fonts, radii, scoreColor, shadows, spacing } from '@/lib/theme';
 import type { Chain, Item } from '@/types/domain';
-
-/** Consecutive calendar weeks (ending now or last week) with ≥1 rating. */
-function weeklyStreak(dates: string[]): number {
-  if (dates.length === 0) return 0;
-  const weekKey = (d: Date) => {
-    const monday = new Date(d);
-    monday.setDate(d.getDate() - ((d.getDay() + 6) % 7));
-    monday.setHours(0, 0, 0, 0);
-    return monday.getTime();
-  };
-  const weeks = new Set(dates.map((iso) => weekKey(new Date(iso))));
-  const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
-  let cursor = weekKey(new Date());
-  if (!weeks.has(cursor)) cursor -= WEEK_MS; // grace: streak may end last week
-  let streak = 0;
-  while (weeks.has(cursor)) {
-    streak += 1;
-    cursor -= WEEK_MS;
-  }
-  return streak;
-}
 
 interface BestPick {
   kind: 'own' | 'predicted' | 'locked';

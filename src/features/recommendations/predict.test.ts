@@ -12,6 +12,7 @@ function item(id: string): Item {
     attributes: { crispy: 0.8, protein: 'chicken' },
     isActive: true,
     isNew: false,
+    launchedAt: null,
     tagSlugs: ['chicken'],
   };
 }

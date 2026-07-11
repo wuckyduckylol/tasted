@@ -47,6 +47,7 @@ export interface Item {
   attributes: ItemAttributes;
   isActive: boolean;
   isNew: boolean;
+  launchedAt: string | null;
   tagSlugs: string[];
 }
 

@@ -49,6 +49,7 @@ export function mapItem(row: ItemRowWithTags): Item {
     attributes: attributes.success ? attributes.data : {},
     isActive: row.is_active,
     isNew: row.is_new,
+    launchedAt: row.launched_at,
     tagSlugs: row.item_tags.flatMap((link) => (link.tags ? [link.tags.slug] : [])),
   };
 }

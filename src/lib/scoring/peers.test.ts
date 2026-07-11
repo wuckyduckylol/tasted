@@ -12,6 +12,7 @@ function makeItem(id: string, bucket: Item['bucket']): Item {
     attributes: {},
     isActive: true,
     isNew: false,
+    launchedAt: null,
     tagSlugs: [],
   };
 }
