@@ -1,11 +1,11 @@
 import { Baloo2_700Bold, Baloo2_800ExtraBold } from '@expo-google-fonts/baloo-2';
 import {
-  Nunito_400Regular,
-  Nunito_600SemiBold,
-  Nunito_700Bold,
-  Nunito_800ExtraBold,
+  Figtree_400Regular,
+  Figtree_600SemiBold,
+  Figtree_700Bold,
+  Figtree_800ExtraBold,
   useFonts,
-} from '@expo-google-fonts/nunito';
+} from '@expo-google-fonts/figtree';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
@@ -64,10 +64,10 @@ export default function RootLayout() {
   const [fontsLoaded, fontsError] = useFonts({
     Baloo2_700Bold,
     Baloo2_800ExtraBold,
-    Nunito_400Regular,
-    Nunito_600SemiBold,
-    Nunito_700Bold,
-    Nunito_800ExtraBold,
+    Figtree_400Regular,
+    Figtree_600SemiBold,
+    Figtree_700Bold,
+    Figtree_800ExtraBold,
   });
   // Render with system fonts rather than hanging forever if fonts fail to load.
   const fontsReady = fontsLoaded || fontsError !== null;

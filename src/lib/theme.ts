@@ -15,6 +15,12 @@ export const colors = {
   accentBorder: '#FFC7B8', // coral border for selected cards
   candy: '#F290B9', // candy pink — hero/celebration surfaces (dark text only)
   candySoft: '#FCE9F2', // pink tint — chips and soft fills on cream
+  butter: '#FCEFD4', // avatar/badge tint
+  peach: '#FFE3D6', // avatar/badge tint
+  lovedSoft: '#E9F6EE', // rate-step face tint
+  fineSoft: '#FCF3E3', // rate-step face tint
+  dislikedSoft: '#FBEAE8', // rate-step face tint
+  track: '#F3EFE7', // progress/ring tracks + hairline separators
   // Verdict colors — reserved for scores ONLY (never decorative use).
   loved: '#2FBF71',
   fine: '#F5A623',
@@ -30,23 +36,24 @@ export const colors = {
 
 export const spacing = { xs: 4, sm: 8, md: 16, lg: 24, xl: 32, xxl: 48 } as const;
 
-export const radii = { xs: 8, sm: 10, md: 14, lg: 20, xl: 28, pill: 999 } as const;
+/** Radius roles (handoff "candy thread v2"): cards 16 · thumbs/badges 14 (md) · hero corners 28 (xl) · pills/fields 999. */
+export const radii = { xs: 8, sm: 10, md: 14, card: 16, lg: 20, xl: 28, pill: 999 } as const;
 
 /** Minimum tap target per accessibility requirement (Section 12.3). */
 export const minTapTarget = 44;
 
 /**
- * Font families (Baloo 2 display + Nunito body — loaded in app/_layout.tsx).
+ * Font families (Baloo 2 display + Figtree body — loaded in app/_layout.tsx).
  * Chunky rounded lowercase display per the happly-style art direction.
  * Weights are baked into family names; do NOT combine with fontWeight on Android.
  */
 export const fonts = {
   display: 'Baloo2_800ExtraBold',
   displayMedium: 'Baloo2_700Bold',
-  body: 'Nunito_400Regular',
-  bodySemiBold: 'Nunito_600SemiBold',
-  bodyBold: 'Nunito_700Bold',
-  bodyExtraBold: 'Nunito_800ExtraBold',
+  body: 'Figtree_400Regular',
+  bodySemiBold: 'Figtree_600SemiBold',
+  bodyBold: 'Figtree_700Bold',
+  bodyExtraBold: 'Figtree_800ExtraBold',
 } as const;
 
 /** Type scale — use these instead of ad-hoc fontSize/fontFamily pairs. */
@@ -63,6 +70,14 @@ export const type = {
 
 /** Soft warm card shadow — pair with backgroundColor card + radius md/lg. */
 export const shadows = {
+  /** THE card recipe (handoff §2): white bg, radius 16, no border, this shadow. */
+  soft: {
+    shadowColor: colors.baseDark,
+    shadowOpacity: 0.05,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 2,
+  },
   card: {
     shadowColor: colors.baseDark,
     shadowOpacity: 0.06,
@@ -79,8 +94,15 @@ export const shadows = {
   },
 } satisfies Record<string, ViewStyle>;
 
-/** Motion durations (ms) — micro 150–300, per HIG/MD guidance. */
-export const motion = { fast: 150, base: 220, slow: 300 } as const;
+/** Motion durations (ms) — micro 150–300 per HIG/MD; enter/count/ring per handoff motion system. */
+export const motion = {
+  fast: 150,
+  base: 220,
+  slow: 300,
+  enter: 550,
+  count: 1300,
+  ring: 1350,
+} as const;
 
 export function bandColor(band: Band): string {
   return colors[band];
