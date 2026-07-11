@@ -1,21 +1,38 @@
 import { Tabs } from 'expo-router';
-import { CircleUserRound, House, ListOrdered, Search, Sparkles } from 'lucide-react-native';
+import {
+  CircleUserRound,
+  House,
+  ListOrdered,
+  Search,
+  Sparkles,
+  type LucideIcon,
+} from 'lucide-react-native';
+import { StyleSheet, View } from 'react-native';
 
-import { colors, fonts } from '@/lib/theme';
+import { colors, fonts, radii } from '@/lib/theme';
+
+/** Icon + 4px active dot underneath (handoff 3a tab bar: no labels). */
+function TabIcon({ icon: Icon, color, focused }: { icon: LucideIcon; color: string; focused: boolean }) {
+  return (
+    <View style={styles.iconWrap}>
+      <Icon color={color} size={23} strokeWidth={2} />
+      <View style={[styles.dot, { backgroundColor: focused ? colors.accent : 'transparent' }]} />
+    </View>
+  );
+}
 
 export default function TabsLayout() {
   return (
     <Tabs
       screenOptions={{
-        // Candy header band ties every tab back to the intro screen's vibe.
         headerStyle: { backgroundColor: colors.candy },
         headerTintColor: colors.baseDark,
         headerTitleStyle: { fontFamily: fonts.display, fontSize: 22, color: colors.baseDark },
         headerShadowVisible: false,
         tabBarActiveTintColor: colors.accent,
         tabBarInactiveTintColor: colors.textMuted,
-        tabBarStyle: { backgroundColor: colors.base, borderTopColor: colors.border },
-        tabBarLabelStyle: { fontFamily: fonts.bodyBold, fontSize: 11 },
+        tabBarShowLabel: false,
+        tabBarStyle: { backgroundColor: colors.base, borderTopColor: colors.track },
         sceneStyle: { backgroundColor: colors.base },
       }}
     >
@@ -23,24 +40,27 @@ export default function TabsLayout() {
         name="index"
         options={{
           title: 'tasted',
-          tabBarLabel: 'home',
-          tabBarIcon: ({ color, size }) => <House color={color} size={size} strokeWidth={2} />,
+          headerShown: false, // home owns its top (candy hero)
+          tabBarIcon: ({ color, focused }) => <TabIcon icon={House} color={color} focused={focused} />,
         }}
       />
       <Tabs.Screen
         name="search"
         options={{
           title: 'search',
-          tabBarIcon: ({ color, size }) => <Search color={color} size={size} strokeWidth={2} />,
+          headerShown: false, // in-screen Baloo title per handoff 4e
+          tabBarIcon: ({ color, focused }) => (
+            <TabIcon icon={Search} color={color} focused={focused} />
+          ),
         }}
       />
       <Tabs.Screen
         name="ranks"
         options={{
           title: 'your ranks',
-          tabBarLabel: 'ranks',
-          tabBarIcon: ({ color, size }) => (
-            <ListOrdered color={color} size={size} strokeWidth={2} />
+          headerShown: false, // in-screen title per handoff 4f
+          tabBarIcon: ({ color, focused }) => (
+            <TabIcon icon={ListOrdered} color={color} focused={focused} />
           ),
         }}
       />
@@ -48,18 +68,27 @@ export default function TabsLayout() {
         name="drops"
         options={{
           title: 'drops',
-          tabBarIcon: ({ color, size }) => <Sparkles color={color} size={size} strokeWidth={2} />,
+          headerShown: false, // in-screen title per handoff 4g
+          tabBarIcon: ({ color, focused }) => (
+            <TabIcon icon={Sparkles} color={color} focused={focused} />
+          ),
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
           title: 'profile',
-          tabBarIcon: ({ color, size }) => (
-            <CircleUserRound color={color} size={size} strokeWidth={2} />
+          headerShown: false, // identity row owns the top per handoff 4h
+          tabBarIcon: ({ color, focused }) => (
+            <TabIcon icon={CircleUserRound} color={color} focused={focused} />
           ),
         }}
       />
     </Tabs>
   );
 }
+
+const styles = StyleSheet.create({
+  iconWrap: { alignItems: 'center', gap: 3, paddingTop: 6 },
+  dot: { width: 4, height: 4, borderRadius: radii.pill },
+});
