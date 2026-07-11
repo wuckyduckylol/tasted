@@ -3,9 +3,9 @@ import { CupSoda, IceCreamCone, Sandwich } from 'lucide-react-native';
 import { memo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { communityContextLine } from './score';
+import { itemRowContextLine } from './score';
 import type { LeadDisplay } from '../features/recommendations/predict';
-import { colors, fonts, radii, scoreColor, shadows, spacing, type } from '../lib/theme';
+import { colors, fonts, radii, scoreColor, shadows, spacing } from '../lib/theme';
 import type { Bucket, Item, ItemScore } from '../types/domain';
 
 interface Props {
@@ -19,7 +19,7 @@ interface Props {
 
 function BucketGlyph({ bucket }: { bucket: Bucket }) {
   const Icon = bucket === 'drinks' ? CupSoda : bucket === 'sweet' ? IceCreamCone : Sandwich;
-  return <Icon color={colors.accent} size={24} strokeWidth={1.8} />;
+  return <Icon color={colors.accent} size={22} strokeWidth={1.8} />;
 }
 
 function Lead({ lead }: { lead: LeadDisplay }) {
@@ -57,9 +57,8 @@ function Lead({ lead }: { lead: LeadDisplay }) {
       );
     case 'forming':
       return (
-        <View style={styles.leadWrap} accessibilityLabel="Score forming">
-          <Text style={styles.leadForming}>new</Text>
-          <Text style={styles.leadCaption}>forming</Text>
+        <View style={styles.newChip} accessibilityLabel="Score forming">
+          <Text style={styles.newChipText}>new</Text>
         </View>
       );
   }
@@ -84,7 +83,7 @@ export const ItemRow = memo(function ItemRow({ item, score, lead, onPress, showL
         <Text style={styles.name} numberOfLines={2}>
           {item.name}
         </Text>
-        <Text style={styles.context}>{communityContextLine(score)}</Text>
+        <Text style={styles.context}>{itemRowContextLine(score)}</Text>
       </View>
       {showLead ? <Lead lead={lead} /> : null}
     </Pressable>
@@ -97,22 +96,26 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: spacing.md,
     backgroundColor: colors.card,
-    borderRadius: radii.md,
-    borderWidth: 1,
-    borderColor: colors.border,
+    borderRadius: radii.card,
     padding: spacing.md,
-    minHeight: 72,
-    ...shadows.card,
+    minHeight: 68,
+    ...shadows.soft,
   },
-  pressed: { opacity: 0.7 },
-  thumb: { width: 52, height: 52, borderRadius: radii.sm, backgroundColor: colors.candySoft },
+  pressed: { opacity: 0.8 },
+  thumb: { width: 46, height: 46, borderRadius: radii.md, backgroundColor: colors.candySoft },
   thumbPlaceholder: { alignItems: 'center', justifyContent: 'center' },
   info: { flex: 1, gap: 2 },
-  name: { ...type.bodyStrong },
-  context: { fontFamily: fonts.bodySemiBold, fontSize: 13, color: colors.textMuted },
-  leadWrap: { alignItems: 'center', minWidth: 56 },
-  leadScore: { fontFamily: fonts.display, fontSize: 20 },
-  leadPct: { fontFamily: fonts.display, fontSize: 20, color: colors.text },
-  leadForming: { fontFamily: fonts.bodyBold, fontSize: 14, color: colors.textMuted },
-  leadCaption: { fontFamily: fonts.bodySemiBold, fontSize: 11, color: colors.textMuted },
+  name: { fontFamily: fonts.bodyBold, fontSize: 15.5, color: colors.text },
+  context: { fontFamily: fonts.bodySemiBold, fontSize: 12, color: colors.textMuted },
+  leadWrap: { alignItems: 'center', minWidth: 52 },
+  leadScore: { fontFamily: fonts.display, fontSize: 19 },
+  leadPct: { fontFamily: fonts.display, fontSize: 19, color: colors.text },
+  leadCaption: { fontFamily: fonts.bodyBold, fontSize: 10.5, color: colors.textMuted },
+  newChip: {
+    backgroundColor: colors.track,
+    borderRadius: radii.pill,
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+  },
+  newChipText: { fontFamily: fonts.bodyExtraBold, fontSize: 13, color: colors.textFaint },
 });

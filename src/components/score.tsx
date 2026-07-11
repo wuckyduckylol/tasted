@@ -1,37 +1,23 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { useEffect, useRef } from 'react';
+import { Animated, Easing, StyleSheet, Text, View } from 'react-native';
 
-import { colors, scoreColor, spacing } from '../lib/theme';
+import { useReducedMotion } from './ui';
+import { colors, fonts, radii, shadows, spacing } from '../lib/theme';
 import type { ItemScore } from '../types/domain';
 
-/** Big colored 0–10 score (verdict colors reserved for scores, SPEC 12.6). */
-export function ScoreNumber({ score, label }: { score: number; label?: string }) {
-  return (
-    <View style={styles.scoreWrap} accessibilityLabel={`${score.toFixed(1)} out of 10${label ? `, ${label}` : ''}`}>
-      <Text style={[styles.scoreBig, { color: scoreColor(score) }]}>{score.toFixed(1)}</Text>
-      {label ? <Text style={styles.scoreLabel}>{label}</Text> : null}
-    </View>
-  );
-}
-
-export function FormingBadge() {
-  return (
-    <View style={styles.formingBadge} accessibilityLabel="Score forming">
-      <Text style={styles.formingText}>score forming</Text>
-    </View>
-  );
-}
-
-/** Community block: Worth It % lead, weighted /10, band distribution (SPEC 6.5). */
+/** Community card (handoff 4b): lowercase header, % lead, /10 + count, animated dist bar. */
 export function CommunityBlock({ score }: { score: ItemScore | null }) {
   if (!score || score.numRatings < 5 || score.worthItPct === null) {
     return (
       <View style={styles.block}>
-        <Text style={styles.blockTitle}>Community</Text>
-        <FormingBadge />
+        <Text style={styles.blockTitle}>community</Text>
+        <View style={styles.formingChip}>
+          <Text style={styles.formingText}>score forming</Text>
+        </View>
         <Text style={styles.mutedSmall}>
           {score && score.numRatings > 0
             ? `${score.numRatings} rating${score.numRatings === 1 ? '' : 's'} so far — a few more and the score goes live.`
-            : 'No ratings yet. Be one of the first.'}
+            : 'no ratings yet — be one of the first.'}
         </Text>
       </View>
     );
@@ -39,27 +25,68 @@ export function CommunityBlock({ score }: { score: ItemScore | null }) {
   const total = Math.max(score.distLoved + score.distFine + score.distDisliked, 1);
   return (
     <View style={styles.block}>
-      <Text style={styles.blockTitle}>Community</Text>
+      <Text style={styles.blockTitle}>community</Text>
       <View style={styles.communityRow}>
         <View>
           <Text style={styles.worthIt}>{Math.round(score.worthItPct)}%</Text>
           <Text style={styles.mutedSmall}>would order again</Text>
         </View>
         {score.weightedScore !== null ? (
-          <View>
+          <View style={styles.weightedCol}>
             <Text style={styles.weighted}>{score.weightedScore.toFixed(1)}/10</Text>
             <Text style={styles.mutedSmall}>{score.numRatings} ratings</Text>
           </View>
         ) : null}
       </View>
-      <View
-        style={styles.distBar}
-        accessibilityLabel={`${score.distLoved} loved, ${score.distFine} fine, ${score.distDisliked} disliked`}
+      <DistBar loved={score.distLoved} fine={score.distFine} disliked={score.distDisliked} total={total} />
+    </View>
+  );
+}
+
+/** Band distribution bar that draws in from the left (motion §E). */
+function DistBar({
+  loved,
+  fine,
+  disliked,
+  total,
+}: {
+  loved: number;
+  fine: number;
+  disliked: number;
+  total: number;
+}) {
+  const reduced = useReducedMotion();
+  const v = useRef(new Animated.Value(reduced ? 1 : 0)).current;
+
+  useEffect(() => {
+    if (reduced) {
+      v.setValue(1);
+      return;
+    }
+    Animated.timing(v, {
+      toValue: 1,
+      duration: 700,
+      delay: 100,
+      easing: Easing.bezier(0.2, 0.7, 0.2, 1),
+      useNativeDriver: false, // width %
+    }).start();
+  }, [v, reduced]);
+
+  return (
+    <View
+      style={styles.distTrack}
+      accessibilityLabel={`${loved} loved, ${fine} fine, ${disliked} disliked`}
+    >
+      <Animated.View
+        style={[
+          styles.distFill,
+          { width: v.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }) },
+        ]}
       >
-        <View style={{ flex: score.distLoved / total, backgroundColor: colors.loved }} />
-        <View style={{ flex: score.distFine / total, backgroundColor: colors.fine }} />
-        <View style={{ flex: score.distDisliked / total, backgroundColor: colors.disliked }} />
-      </View>
+        <View style={{ flex: loved / total, backgroundColor: colors.loved }} />
+        <View style={{ flex: fine / total, backgroundColor: colors.fine }} />
+        <View style={{ flex: disliked / total, backgroundColor: colors.disliked }} />
+      </Animated.View>
     </View>
   );
 }
@@ -71,36 +98,46 @@ export function communityContextLine(score: ItemScore | null): string {
   return `${Math.round(score.worthItPct)}% would order again`;
 }
 
+/**
+ * Context that never duplicates the lead block (handoff 4a): when the lead
+ * already shows "worth it" %, the context shows the rating count instead;
+ * forming items spell out how far along they are.
+ */
+export function itemRowContextLine(score: ItemScore | null): string {
+  if (!score || score.numRatings === 0) return 'no ratings yet';
+  if (score.numRatings < 5 || score.worthItPct === null) {
+    return `${score.numRatings} rating${score.numRatings === 1 ? '' : 's'} — score forming`;
+  }
+  return `${score.numRatings} ratings`;
+}
+
 const styles = StyleSheet.create({
-  scoreWrap: { alignItems: 'center', gap: spacing.xs },
-  scoreBig: { fontSize: 48, fontWeight: '800' },
-  scoreLabel: { fontSize: 13, color: colors.textMuted },
-  formingBadge: {
+  block: {
+    backgroundColor: colors.card,
+    borderRadius: radii.card,
+    padding: spacing.md,
+    gap: spacing.sm,
+    ...shadows.soft,
+  },
+  blockTitle: { fontFamily: fonts.display, fontSize: 16, color: colors.text },
+  formingChip: {
     alignSelf: 'flex-start',
-    backgroundColor: colors.border,
-    borderRadius: 999,
+    backgroundColor: colors.track,
+    borderRadius: radii.pill,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.xs,
   },
-  formingText: { color: colors.textMuted, fontSize: 13, fontWeight: '600' },
-  block: {
-    backgroundColor: colors.card,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: colors.border,
-    padding: spacing.md,
-    gap: spacing.sm,
-  },
-  blockTitle: { fontSize: 14, fontWeight: '700', color: colors.textMuted, textTransform: 'uppercase' },
+  formingText: { fontFamily: fonts.bodyExtraBold, fontSize: 13, color: colors.textFaint },
   communityRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' },
-  worthIt: { fontSize: 34, fontWeight: '800', color: colors.text },
-  weighted: { fontSize: 20, fontWeight: '700', color: colors.text, textAlign: 'right' },
-  mutedSmall: { fontSize: 13, color: colors.textMuted },
-  distBar: {
-    flexDirection: 'row',
+  worthIt: { fontFamily: fonts.display, fontSize: 30, color: colors.text },
+  weightedCol: { alignItems: 'flex-end' },
+  weighted: { fontFamily: fonts.display, fontSize: 18, color: colors.text },
+  mutedSmall: { fontFamily: fonts.bodySemiBold, fontSize: 13, color: colors.textMuted },
+  distTrack: {
     height: 10,
     borderRadius: 5,
     overflow: 'hidden',
-    backgroundColor: colors.border,
+    backgroundColor: colors.track,
   },
+  distFill: { flexDirection: 'row', height: '100%', borderRadius: 5, overflow: 'hidden' },
 });
