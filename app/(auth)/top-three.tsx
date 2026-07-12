@@ -63,7 +63,10 @@ export default function TopThreeStep() {
           keyExtractor={(chain) => chain.id}
           scrollEnabled={false}
           ListEmptyComponent={
-            <EmptyState title="No chains yet" detail="The catalog needs seeding first." />
+            <EmptyState
+              title="the menu's still loading up"
+              detail="check back soon — chains land here as we add them."
+            />
           }
           renderItem={({ item: chain }) => {
             const pickIndex = picks.indexOf(chain.id);

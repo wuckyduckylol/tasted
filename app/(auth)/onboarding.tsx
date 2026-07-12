@@ -90,7 +90,10 @@ export default function OnboardingScreen() {
           keyExtractor={(chain) => chain.id}
           contentContainerStyle={styles.list}
           ListEmptyComponent={
-            <EmptyState title="No chains loaded yet" detail="The catalog needs seeding first." />
+            <EmptyState
+              title="the menu's still loading up"
+              detail="check back soon — chains land here as we add them."
+            />
           }
           renderItem={({ item: chain }) => {
             const selected = selectedChainIds.has(chain.id);
